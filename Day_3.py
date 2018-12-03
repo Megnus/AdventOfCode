@@ -13,9 +13,10 @@ koordList = []
 for x in intList:
     for i in range(x[1], x[1] + x[3]):
         for j in range(x[2], x[2] + x[4]):
-            koordList.append([i, j])
+            if koordList.count([i, j]) == 0:
+                koordList.append([i, j])
 
-print([True if koordList.count(x) > 1 else False  for x in koordList].count(True))
+print(len(koordList))
 
 exit()
 
