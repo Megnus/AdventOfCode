@@ -1,10 +1,5 @@
-import re
-
-from datetime import datetime
-from datetime import timedelta
-import operator
-import numpy
 import itertools
+import re
 
 
 def swap(arr, swpr):
@@ -13,66 +8,114 @@ def swap(arr, swpr):
     arr[arr.index(x)], arr[arr.index(y)] = arr[arr.index(y)], arr[arr.index(x)]
 
 
-def sort_by(myset, ar2):
-    eq = True
-    while eq:
-        new_set = myset.copy()
-        for e in ar2:
-            swap(myset, e)
-            eq = False
-        for q, w in zip(new_set, myset):
-            if q != w:
-                eq = True
-                break
+def is_(arr, marr):
+    try:
+        return arr.index(marr) > 0
+    except ValueError:
+        return False
 
-
-def sort_by_b(a_set, b_set):
-    eq = True
-    tt = 0
-    while eq:
-        tt += 1
-        new_set = a_set.copy()
-        for i in range(1, len(a_set)):
-            a = a_set[i - 1]
-            b = a_set[i]
-            if a > b:
-                eqq = False
-                for x in b_set:
-                    if x == [a, b]:
-                        eqq = True
-                        break
-                if not eqq:
-                    a_set[i - 1] = b
-                    a_set[i] = a
-        #print(a_set)
-        eq = False
-        for q, w in zip(new_set, myset):
-            if q != w:
-                eq = True
-                break
-
-f = open('Input/input_day_7.txt', 'r')
+f = open('Input/input_day_test.txt', 'r')
 data = f.read()
 f.close()
 
 ar1 = data.splitlines()
 ar2 = [[re.findall('(?<=Step\s)[A-Z]', x)[0], re.findall('(?<=step\s)[A-Z]', x)[0]] for x in ar1]
 
+
+st = 'CFGHAEMNBPRDIVWQUZJYTKLOSX'
+
 #flatten
 flat_list = [item for sublist in ar2 for item in sublist]
-
+#exit()
 #uniqe
 ar3 = list(set(flat_list))
-print(ar3)
 
+left = [x[0] for x in ar2]
+right = [x[1] for x in ar2]
+ar4 = sorted(set(list(filter(lambda x: not right.__contains__(x), left))))
+
+res = []
+
+as1 = sorted(ar4)
 for x in ar2:
-    te = True
-    for y in ar2:
-        if x[0] == y[1]:
-            te = False
-            break
-    if te:
+    if x[0] == 'T':#or x[1] == 'S':
         print(x)
+print('-------')
+for a in ar2:
+    if a[0] == 'T':
+        for x in ar2:
+            if x[0] == a[1]:
+                print(x)
+print('-------')
+# GKPTSLUXBIJMNCADFOVHEWYQRZ
+exit()
+for i in range(0, 50):
+    #c = ar4.pop(0)
+    #c = ar4[0]
+    #print(res, ar4)
+    for ic in ar4:
+        #print([is_(ar2, [x, ic]) for x in ar4])
+        if not is_([is_(ar2, [x[0], ic]) and not is_(res, x[0]) for x in ar2], True):
+            c = ar4.pop(ar4.index(ic))
+            #ar2 = list(filter(lambda x: x[0] != c, ar2))
+            break
+
+
+    res.append(c)
+    ar5 = list(filter(lambda x: x[0] == c, ar2))
+    ar4 += [x[1] for x in ar5]
+    ar4 = sorted(set(ar4))
+    print(res, ar4)
+    print(''.join(res + ar4))
+    print('CFGHAEMNBPRDIVWQUZJYTKLOSX')
+print(''.join(res))
+
+"""
+
+
+c = ar4.pop(0)
+res.append(c)
+ar5 = list(filter(lambda x: x[0] == c, ar2))
+ar4 += [x[1] for x in ar5]
+ar4 = sorted(ar4)
+
+c = ar4.pop(0)
+res.append(c)
+ar5 = list(filter(lambda x: x[0] == c, ar2))
+ar4 += [x[1] for x in ar5]
+ar4 = sorted(ar4)
+
+c = ar4.pop(0)
+res.append(c)
+ar5 = list(filter(lambda x: x[0] == c, ar2))
+ar4 += [x[1] for x in ar5]
+ar4 = sorted(ar4)
+"""
+print(res, ar4)
+
+
+
+
+#ar5 = sorted(set(list(filter(lambda x: not right.__contains__(x), left))))
+
+#ar4 = list(filter(lambda x: ar2))
+
+#print(right)
+
+
+
+
+
+
+
+exit()
+
+
+
+
+
+
+
 
 n = 0
 print(ar3)
