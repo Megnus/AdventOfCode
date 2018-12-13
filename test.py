@@ -17,25 +17,27 @@ def func(v, n):
 
 
 def calc(v, n):
-    global s
+    su = []
     for i in range(0, n):
         c = v[0]
         e = v[1]
         v = v[2:]
-        v, s_ = calc(v, c)
+        v, su_ = calc(v, c)
         m = v[:e]
+        if len(su_) > 0:
+            print(su_, m)
         v = v[e:]
-        s += m
-    return v
+        su += m + su_
+    return v, su
 
 
-f = open('Input/input_day_8.txt', 'r')
+f = open('Input/input_test.txt', 'r')
 data = f.read()
 f.close()
 ar = list(map(lambda n: int(n), data.split(' ')))
 s = []
 
 print('Raw:', ar)
-func(ar, 1)
+print(calc(ar, 1))
 print('Sum:', sum(s))
 
