@@ -17,27 +17,34 @@ def func(v, n):
 
 
 def calc(v, n):
-    su = []
+    s = []
     for i in range(0, n):
         c = v[0]
         e = v[1]
         v = v[2:]
-        v, su_ = calc(v, c)
+        v, t = calc(v, c)
         m = v[:e]
-        if len(su_) > 0:
-            print(su_, m)
+        if c != 0:
+            m = list(map(lambda x: t[x - 1] if x <= len(t) else 0, m))
+        s.append(sum(m))
         v = v[e:]
-        su += m + su_
-    return v, su
+
+    return v, s
+
+
+su_=[1, 2, 3, 7, 5]
+m = [1, 1, 5, 4, 3, 10]
 
 
 f = open('Input/input_test.txt', 'r')
+f = open('Input/input_day_8.txt', 'r')
 data = f.read()
 f.close()
 ar = list(map(lambda n: int(n), data.split(' ')))
 s = []
 
 print('Raw:', ar)
-print(calc(ar, 1))
-print('Sum:', sum(s))
+func(ar, 1)
+print('First star:', sum(s))
+print('Second star:', calc(ar, 1)[1][0])
 
