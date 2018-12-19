@@ -53,8 +53,8 @@ def new_vel(car, track_p):
 
 
 f = open('Input/input_test.txt', 'r')
-f = open('Input/input_day_13.txt', 'r')
 f = open('Input/input_day_13_test.txt', 'r')
+f = open('Input/input_day_13.txt', 'r')
 data = f.read()
 f.close()
 data = data.splitlines()
@@ -67,38 +67,59 @@ for y in range(0, len(data)):
         if c == '\\' or c == '/' or c == '+':
             v.append([[x, y], c])
         elif c == '>' or c == '<' or c == '^' or c == 'v':
-            cars.append([[x, y], [c, 0]])
+            cars.append([[x, y], [c, 0], [0, 0]])
+
 
 #nv = list(map(lambda x: x[0], v))
 #print(get(v, [7, 1]))
 
 count = 0
-collision = False
-while not collision:
-    #print(cars[0], get(v, cars[0][0]))
+while True:
     pos_array = []
+    idx = []
     for car in cars:
-        if not pos_array and not pos_array.count(car[0]) > 1:
-            new_pos(car)
-            car_pos = list(map(lambda p: p[0], cars))
-        #for p in car_pos:
-        if car_pos.count(car[0]) > 1:
-            pos_array.append(car[0])
-            print(list(map(lambda x: x[0], cars)))
-            print(pos_array)
-        else:
-            track = get(v, car[0])
-            if track:
-                new_vel(car, track)
+        #old_pos = [car[0][0], car[0][1]]
+        new_pos(car)
 
-    if pos_array:
-        print(list(map(lambda x: x[0], cars)))
+        if list(map(lambda x: x[0], cars)).count(car[0]) > 1:
+            print(car[0])
+            for i in range(0, len(cars)):
+                if list(map(lambda o: o[0], cars)).count(cars[i][0]) > 1:
+                    idx.append(i)
+                idx.sort(key=lambda x: x, reverse=True)
+                for i in idx:
+                    cars.pop(i)
 
-    cars = list(filter(lambda x: not is_in(pos_array, x[0]), cars))
+        track = get(v, car[0])
+        if track:
+            new_vel(car, track)
+    if len(idx) > 0:
+        idx.sort(key=lambda x: x, reverse=True)
+        for i in idx:
+            cars.pop(i)
+        print(idx, cars)
 
-    if pos_array:
-        print(list(map(lambda x: x[0], cars)))
-    #print(cars)
+
+
+
+    """
+    c_pos = list(map(lambda x: x[2], cars))
+    if len(list(filter(lambda x: c_pos.count(x[2]) > 1, cars))) > 0:
+        print(list(filter(lambda x: c_pos.count(x[2]) > 1, cars)))
+    le = len(cars)
+    cars = list(filter(lambda x: c_pos.count(x[2]) < 2, cars))
+    if le != len(cars):
+        print('2', le, len(cars))
+
+    c_pos = list(map(lambda x: x[0], cars))
+    if len(list(filter(lambda x: c_pos.count(x[0]) > 1, cars))) > 0:
+        print(list(filter(lambda x: c_pos.count(x[0]) > 1, cars)))
+    le = len(cars)
+    cars = list(filter(lambda x: c_pos.count(x[0]) < 2, cars))
+    if le != len(cars):
+        print('0', le, len(cars))
+    """
+    #print(len(cars))
     if len(cars) == 1:
         print(cars)
         exit()
@@ -108,9 +129,18 @@ while not collision:
 
 print(pos)
 
-#72,117
+"""
+123,18
+54,36
+122,69
+104,49
+24,102
+19,85
+32,107
+83,46
+71,123
 
-
+"""
 """
 for y in range(0, len(data)):
     x = 0
