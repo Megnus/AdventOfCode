@@ -1,26 +1,182 @@
 import itertools
 import re
 from functools import reduce
+import tools
 
 
-def is_in(v, e):
-    try:
-        v.index(e)
-        return True
-    except ValueError:
-        return False
+def extract(u):
+    global v
+    return list(map(lambda x: x[1], u))
 
 
-def find(vec, elm):
-    vec = list(map(lambda x: x[0], vec))
-    try:
-        return vec.index(elm)
-    except ValueError:
-        return -1
+def init():
+    f = open('Input/input_test.txt', 'r')
+    in_data = f.read()
+    f.close()
+    in_data = in_data.splitlines()
+    in_data = [list(x) for x in in_data]
+    height = len(in_data)
+    width = len(in_data[0])
+    p = []
+    for x in range(0, width):
+        p.append([])
+        for y in range(0, height):
+            p[x].append([in_data[y][x], [x, y]])
+    return p
+
+"""
+def print_data(v):
+    global w, h
+    for y in range(0, h):
+        for x in range(0, w):
+            print(v[x][y][0], end='')
+        print()
+"""
 
 
-def get(vec, elm):
-    idx = find(vec, elm)
-    if idx >= 0:
-        return vec[idx][1]
+def print_data(v, u):
+    global w, h
+    for y in range(0, h):
+        for x in range(0, w):
+            if tools.is_in(u, [x, y]):
+                print('x', end='')
+            else:
+                print(v[x][y][0], end='')
+        print()
+
+
+def get_pos(p, d):
+    global directions, v
+    pos = []
+    test = False
+    if [p[0], p[1]] == [2, 3]:
+        print('..................................')
+    for m in directions:
+        np = [p[0] + m[0], p[1] + m[1], d]
+        if [p[0], p[1]] == [2, 3]:
+            print(np, '.............. +++++++++++ ....................')
+            print( v[np[0]][np[1]], '.............. +++++++++++ ....................')
+
+        t = v[np[0]][np[1]]
+        if test:
+            print(np)
+        if t[0] == '.':
+            pos.append(np)
+    if [p[0], p[1]] == [2, 3]:
+        print(pos, '..............POSOPSPSPSP....................')
+
+    return pos
+
+
+def get_all_pos(p):
+    global v
+    occ = get_pos(p)
+    q = True
+    while q:
+        q = False
+        #occ = get_pos(m)
+        print('occ: ', occ)
+        occ = get_all_pos(m)
+        for m in occ:
+            if not tools.is_in(occ, m): # and get_pos(v, b[1]):
+                occ.append(m)
+                q = True
+    return occ
+
+
+def is_not_in(vec, p):
+    occ = list(map(lambda x: [x[0], x[1]], vec))
+    return not tools.is_in(occ, [p[0], p[1]])
+
+
+def print_distance_matrix(distance):
+    for x in range(0, w):
+        for y in range(0, h):
+            val = distance[x][y]
+            print('-' if val < 0 else val, end=' ')
+        print()
+
+
+def distance_calc(pos):
+    global v
+    distance = [[-1 for x in range(w)] for y in range(h)]
+    x, y = pos
+    distance[x][y] = 0
+    positions = get_move(pos)
+    depth = 0
+    for i in range(0, 15):
+        depth += 1
+        new_positions = []
+        for pos in positions:
+            x, y = pos
+            if distance[x][y] < 0:
+                distance[x][y] = depth
+                new_positions.append(pos)
+        positions = []
+        for pos in new_positions:
+            positions += get_move(pos)
+
+    print_distance_matrix(distance)
+    return distance
+
+
+
+
+
+def get_spec(eg):
+    global v, w, h
+    p = []
+    for col in v:
+        for ele in col:
+            if eg == ele[0]:
+                p.append(ele)
+    return p
+
+
+def get_move(p):
+    global v, directions
+    pos = []
+    for m in directions:
+        np = [p[0] + m[0], p[1] + m[1]]
+        t = v[np[0]][np[1]]
+        if t[0] == '.':
+            pos.append(t[1])
+        if t[1] != np:
+            print(t[1], np)
+    return pos
+
+
+def get_moves(p):
+    pos = []
+    for m in p:
+        pos += get_move(m)
+    return pos
+
+
+directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
+v = init()
+w, h = len(v), len(v[0])
+
+
+distance_calc([2, 3])
+
+exit()
+#g = get_spec('G')
+#e = get_spec('E')
+"""
+pos = get_moves(extract(g))
+
+print_data(v, pos)
+"""
+positions = rebase([2, 2], [], 0)
+positions = sorted(positions, key=lambda x: x[2])
+points = set([x[2] for x in positions])
+__positions = list(filter(lambda x: x[2] == 13, positions))
+
+_positions = list(filter(lambda x: x[2] == 1, positions))
+_positions = [[x[0], x[1]] for x in _positions]
+print_data(v, _positions)
+exit()
+for p in positions:
+    print(p[2], ':', [p[0], p[1]])
 
