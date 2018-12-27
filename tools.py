@@ -3,6 +3,17 @@ import re
 from functools import reduce
 
 
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value in lst2]
+    return lst3
+
+
+def filter_first_from_second(lst1, lst2):
+    lst3 = [x for x in lst1 if x not in lst2]
+    return lst3
+    # return set(lst1) - set(lst2)
+
+
 def is_in(v, e):
     try:
         v.index(e)
@@ -24,3 +35,12 @@ def get(vec, elm):
     if idx >= 0:
         return vec[idx][1]
 
+
+def sort_vector_by_reading_order(vec):
+    vec.sort(key=lambda x: str(x[1]) + str(x[0]))
+
+
+def sort_players_by_reading_order(players):
+    players = list(filter(lambda x: x, players))
+    players.sort(key=lambda x: x[1][1]*10000 + x[1][0])
+    return players

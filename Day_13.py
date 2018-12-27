@@ -56,13 +56,13 @@ data = f.read()
 f.close()
 data = data.splitlines()
 
-v = []
+p = []
 carts = []
 for y in range(0, len(data)):
     for x in range(0, len(data[y])):
         c = data[y][x]
         if c == '\\' or c == '/' or c == '+':
-            v.append([[x, y], c])
+            p.append([[x, y], c])
         elif c == '>' or c == '<' or c == '^' or c == 'v':
             carts.append([[x, y], [c, 0], True])
 
@@ -78,7 +78,7 @@ while True:
                 if c[0] == cart[0]:
                     c[2] = False
             break
-        track = get(v, cart[0])
+        track = get(p, cart[0])
         if track:
             new_vel(cart, track)
     carts = list(filter(lambda c: c[2], carts))
