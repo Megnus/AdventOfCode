@@ -1,8 +1,5 @@
-import itertools
-import re
-from functools import reduce
 import tools
-
+import math
 
 def extract(u):
     global v
@@ -153,6 +150,35 @@ def get_moves(p):
     return pos
 
 
+def fib(n):
+    a, b = 0, 1
+    for i in range(n - 1):
+        c = a + b
+        a, b = b, c
+    return c
+
+
+def calc_primes(prod):
+    primes = []
+    i = 1
+    while i <= prod:
+        i += 1
+        if prod % i == 0:
+            prod //= i
+            primes.append(i)
+            i = 1
+    return primes
+
+
+print(fib(35))
+
+num = math.log(9227465 * math.sqrt(5), 0.5 + math.sqrt(5) / 2)
+print(num)
+p = calc_primes(4321412341253325454645762431352653475325421354364)
+print(p)
+exit()
+
+exit()
 directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
 v = init()
 w, h = len(v), len(v[0])

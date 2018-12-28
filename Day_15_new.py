@@ -67,8 +67,8 @@ def get_sorted_players(players):
     return players
 
 
-def get_opposite_player(player_type):
-    return 'G' if player_type == 'E' else 'E'
+def get_enemy_player_type(player):
+    return 'G' if player[0] == 'E' else 'E'
 
 
 def get_leagal_moves(position):
@@ -103,20 +103,21 @@ def get_distance_matrix(position):
 
 
 def get_closest_position(player):
-    player_type, player_position, hp, active = player
+    _, player_position, _, _ = player
     distance = get_distance_matrix(player_position)
-    opp_player_type = get_opposite_player(player_type)
-    opp_players = get_players_by_type(opp_player_type)
-    opp_players_moves = []
-    for opp_player in opp_players:
-        op_player_position = opp_player[1]
-        op_player_moves = get_leagal_moves(op_player_position)
-        for op_player_move in op_player_moves:
-            opp_players_moves.append(op_player_move)
-    get_sorted_positions(opp_players_moves)
-    if not opp_players_moves:
-        return []
-    min_distance_position = min(opp_players_moves, key=lambda x: distance[x[0]][x[1]])
+    enemy_player_type = get_enemy_player_type(player)
+    enemy_players = get_players_by_type(enemy_player_type)
+    enemy_players_moves = []
+    for enemy_player in enemy_players:
+        enemy_player_position = enemy_player[1]
+        enemy_player_moves = get_leagal_moves(enemy_player_position)
+        for enemy_player_move in enemy_player_moves:
+            enemy_players_moves.append(enemy_player_move)
+    get_sorted_positions(enemy_players_moves)
+    enemy_players_moves = list(filter(lambda x: distance[x[0]][x[1]] > 0, enemy_players_moves))
+    min_distance_position = []
+    if enemy_players_moves:
+        min_distance_position = min(enemy_players_moves, key=lambda x: distance[x[0]][x[1]])
     return min_distance_position
 
 
@@ -127,8 +128,6 @@ def get_path(player):
     if not target_position:
         return []
     distance = get_distance_matrix(player_position)
-    print_distance(distance)
-    print(target_position)
     x, y = target_position
     value = distance[x][y]
     path = [target_position]
@@ -148,7 +147,6 @@ def get_path(player):
 
 def move_player(player, target_pos):
     global p
-    print(player)
     sx, sy = player[1]
     tx, ty = target_pos
     player_type = p[sx][sy]
@@ -157,27 +155,28 @@ def move_player(player, target_pos):
     player[1] = [tx, ty]
 
 
-def get_neighbour_opp_players(player, players):
+def get_neighbour_enemy_players(player, players):
     directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
     player_type, player_position, hp, active = player
-    opp_player_type = get_opposite_player(player_type)
+    enemy_player_type = get_enemy_player_type(player)
     x, y = player_position
     source_moves = list(map(lambda d: [x + d[0], y + d[1]], directions))
     player_list = list(filter(lambda x: x[1] in source_moves, players))
-    player_list = list(filter(lambda x: x[0] == opp_player_type, player_list))
+    player_list = list(filter(lambda x: x[0] == enemy_player_type, player_list))
     get_sorted_players(player_list)
     return player_list
 
 
-def get_neighbour_opp_player(player, players):
-    opp_players = get_neighbour_opp_players(player, players)
+def get_neighbour_enemy_player(player, players):
+    active_players = list(filter(lambda x: x[3], players))
+    opp_players = get_neighbour_enemy_players(player, active_players)
     if len(opp_players) == 0:
         return None
     opp_player = min(opp_players, key=lambda x: x[2])
     return opp_player
 
 
-def attack_opp_player(opp_player, attack_hp):
+def attack_enemy_player(opp_player, attack_hp):
     global p
     if opp_player:
         opp_player[2] -= attack_hp
@@ -187,32 +186,48 @@ def attack_opp_player(opp_player, attack_hp):
             p[x][y] = '.'
 
 
-def is_battle_over(players):
-    return 'G' in [x[0] for x in players] and 'E' in [x[0] for x in players]
+def battle_ended(players):
+    goblins_alive = 'G' in [x[0] for x in players if x[3]]
+    elf_alive = 'E' in [x[0] for x in players if x[3]]
+    return not (goblins_alive and elf_alive)
 
 
-p, w, h = init('Input/input_test_1.txt')
-print_field()
-
+p, w, h = init('Input/input_day_15_original.txt')
+round = 0
+attack = 3
 players = get_players()
-while is_battle_over(players):
+
+while not battle_ended(players):
     for player in players:
+        # Validate present player
         player_active = player[3]
         if not player_active:
             continue
 
-        active_players = list(filter(lambda x: x[2], players))
-        opp_player = get_neighbour_opp_player(player, active_players)
-        # attack_opp_player(opp_player, 3)
-
-        if not opp_player:
+        # Move present player
+        if not get_neighbour_enemy_player(player, players):
             path = get_path(player)
             if path:
                 first_step = path[1]
                 move_player(player, first_step)
 
-        opp_player = get_neighbour_opp_player(player, players)
-        attack_opp_player(opp_player, 3)
-        print(players)
+        # Attack enemy player
+        enemy_player = get_neighbour_enemy_player(player, players)
+        get_enemy_player_type(player)
+        attack = get_attack_hp(player)
+        attack_enemy_player(enemy_player, attack)
+
+        # Update round and check battle end
+        if player == players[-1]:
+            round += 1
+        elif battle_ended(players):
+            break
+
     players = list(filter(lambda x: x[3], players))
-    print_field()
+    get_sorted_players(players)
+
+won = list(set([player[0] for player in players]))[0]
+hp = sum(player[2] for player in players)
+score = round * hp
+
+print(score, won)
