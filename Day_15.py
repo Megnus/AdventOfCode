@@ -255,7 +255,7 @@ def get_elf_survival_battle_score():
 
 def initialization():
     global p, w, h
-    p, w, h = initialization_input('Input/input_day_15_original.txt')
+    p, w, h = initialization_input('Input/input_day_15.txt')
 
 
 print('Part 1:', get_battle_score())
