@@ -1,10 +1,12 @@
-import itertools
-import re
-from functools import reduce
-import tools
+def is_in(v, e):
+    try:
+        v.index(e)
+        return True
+    except ValueError:
+        return False
 
 
-def init(file_name):
+def initialization_input(file_name):
     f = open(file_name, 'r')
     in_data = f.read()
     f.close()
@@ -24,7 +26,7 @@ def print_field_markers(markers):
     global w, h, p
     for y in range(h):
         for x in range(w):
-            print('x' if tools.is_in(markers, [x, y]) else p[x][y], end='')
+            print('x' if is_in(markers, [x, y]) else p[x][y], end='')
         print()
 
 
@@ -71,7 +73,7 @@ def get_enemy_player_type(player):
     return 'G' if player[0] == 'E' else 'E'
 
 
-def get_leagal_moves(position):
+def get_legal_moves(position):
     global p
     x, y = position
     directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
@@ -88,7 +90,7 @@ def get_distance_matrix(position):
     x, y = position
     distance = [[-1 for y in range(h)] for x in range(w)]
     distance[x][y] = 0
-    positions = get_leagal_moves(position)
+    positions = get_legal_moves(position)
     depth = 0
     while len(positions) > 0:
         depth += 1
@@ -97,7 +99,7 @@ def get_distance_matrix(position):
             x, y = position
             if distance[x][y] < 0:
                 distance[x][y] = depth
-                new_positions += get_leagal_moves(position)
+                new_positions += get_legal_moves(position)
         positions = new_positions
     return distance
 
@@ -110,7 +112,7 @@ def get_closest_position(player):
     enemy_players_moves = []
     for enemy_player in enemy_players:
         enemy_player_position = enemy_player[1]
-        enemy_player_moves = get_leagal_moves(enemy_player_position)
+        enemy_player_moves = get_legal_moves(enemy_player_position)
         for enemy_player_move in enemy_player_moves:
             enemy_players_moves.append(enemy_player_move)
     get_sorted_positions(enemy_players_moves)
@@ -192,42 +194,73 @@ def battle_ended(players):
     return not (goblins_alive and elf_alive)
 
 
-p, w, h = init('Input/input_day_15_original.txt')
-round = 0
-attack = 3
-players = get_players()
+def battle(elf_attack):
+    round = 0
+    attack_map = {'E': elf_attack, 'G': 3}
+    players = get_players()
 
-while not battle_ended(players):
-    for player in players:
-        # Validate present player
-        player_active = player[3]
-        if not player_active:
-            continue
+    while not battle_ended(players):
+        for player in players:
+            # Validate present player
+            player_active = player[3]
+            if not player_active:
+                continue
 
-        # Move present player
-        if not get_neighbour_enemy_player(player, players):
-            path = get_path(player)
-            if path:
-                first_step = path[1]
-                move_player(player, first_step)
+            # Move present player
+            if not get_neighbour_enemy_player(player, players):
+                path = get_path(player)
+                if path:
+                    first_step = path[1]
+                    move_player(player, first_step)
 
-        # Attack enemy player
-        enemy_player = get_neighbour_enemy_player(player, players)
-        get_enemy_player_type(player)
-        attack = get_attack_hp(player)
-        attack_enemy_player(enemy_player, attack)
+            # Attack enemy player
+            enemy_player = get_neighbour_enemy_player(player, players)
+            get_enemy_player_type(player)
+            attack = attack_map[player[0]]
+            attack_enemy_player(enemy_player, attack)
 
-        # Update round and check battle end
-        if player == players[-1]:
-            round += 1
-        elif battle_ended(players):
-            break
+            # Update round and check battle end
+            if player == players[-1]:
+                round += 1
+            elif battle_ended(players):
+                break
 
-    players = list(filter(lambda x: x[3], players))
-    get_sorted_players(players)
+        players = list(filter(lambda x: x[3], players))
+        get_sorted_players(players)
 
-won = list(set([player[0] for player in players]))[0]
-hp = sum(player[2] for player in players)
-score = round * hp
+    won = list(set([player[0] for player in players]))[0]
+    hp = sum(player[2] for player in players)
+    score = round * hp
+    num_of_elfs = [x[0] for x in players].count('E')
+    return score, won, num_of_elfs
 
-print(score, won)
+
+def get_battle_score():
+    initialization()
+    result = battle(3)
+    return result[0]
+
+
+def get_elf_survival_battle_score():
+    initialization()
+    number_of_elfs = [x[0] for x in get_players()].count('E')
+    max_elf_attack = 10000
+    for attack in range(3, max_elf_attack):
+        initialization()
+        result = battle(attack)
+        if result[2] == number_of_elfs:
+            return result[0]
+    return None
+
+
+def initialization():
+    global p, w, h
+    p, w, h = initialization_input('Input/input_day_15_original.txt')
+
+
+print('Part 1:', get_battle_score())
+print('Part 2:', get_elf_survival_battle_score())
+
+
+
+
