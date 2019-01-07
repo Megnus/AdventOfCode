@@ -1,16 +1,13 @@
-import itertools
-import re
-from functools import reduce
-import tools
+def is_in(v, e):
+    try:
+        v.index(e)
+        return True
+    except ValueError:
+        return False
 
 
-def extract(u):
-    global p
-    return list(map(lambda x: x[1], u))
-
-
-def init():
-    f = open('Input/input_day_15.txt', 'r')
+def initialization_input(file_name):
+    f = open(file_name, 'r')
     in_data = f.read()
     f.close()
     in_data = in_data.splitlines()
@@ -18,109 +15,82 @@ def init():
     height = len(in_data)
     width = len(in_data[0])
     p = []
-    for x in range(0, width):
+    for x in range(width):
         p.append([])
-        for y in range(0, height):
-            p[x].append([in_data[y][x], [x, y]])
-    return p
+        for y in range(height):
+            p[x].append(in_data[y][x])
+    return p, width, height
 
 
-def print_data(u):
+def print_field_markers(markers):
     global w, h, p
-    print()
-    for y in range(0, h):
-        for x in range(0, w):
-            if tools.is_in(u, [x, y]):
-                print('x', end='')
-            else:
-                print(v[x][y][0], end='')
+    for y in range(h):
+        for x in range(w):
+            print('x' if is_in(markers, [x, y]) else p[x][y], end='')
         print()
 
 
-def get_all_pos(p):
-    occ = get_move(p)
-    q = True
-    while q:
-        q = False
-        for o in occ:
-            for s in get_move(o):
-                if not tools.is_in(occ, s): # and get_pos(v, b[1]):
-                    occ.append(s)
-                    q = True
-    return occ
+def print_distance(distance):
+    global w, h, p
+    for y in range(h):
+        for x in range(w):
+            string = "0" + str(distance[x][y])
+            print(string[-2:], end=' ')
+        print()
 
 
-def get_spec(eg):
-    global v, w, h
-    pos = []
-    for col in v:
-        for ele in col:
-            if eg == ele[0]:
-                pos.append(ele)
-    return pos
-
-
-def get_neighbours(player):
-    global p, opponents_map
-    position = player[1]
-    x, y = position
-    pl_type = player[0]
-    op_pl_type = opponents_map[pl_type]
-    neighbours = []
-    for direction in directions:
-        dx, dy = direction
-        value = v[x + dx][y + dy][0]
-        if value == op_pl_type:
-            neighbours.append([x + dx, y + dy])
-    return neighbours
+def print_field():
+    print_field_markers([])
 
 
 def get_players():
-    global p, w, h
+    global w, h, p
     players = []
     for y in range(h):
         for x in range(w):
-            if v[x][y][0] != '.' and v[x][y][0] != '#':
-                player = v[x][y]
-                player.append(200)
-                players.append(player)
+            element = p[x][y]
+            if element == 'E' or element == 'G':
+                players.append([element, [x, y], 200, True])
+    get_sorted_players(players)
     return players
 
 
-def get_spec_targets(eg):
+def get_players_by_type(player_type):
+    return list(filter(lambda x: x[0] == player_type, get_players()))
+
+
+def get_sorted_positions(positions):
+    positions.sort(key=lambda x: 10000 * x[1] + x[0])
+    return positions
+
+
+def get_sorted_players(players):
+    players.sort(key=lambda x: 10000 * x[1][1] + x[1][0])
+    return players
+
+
+def get_enemy_player_type(player):
+    return 'G' if player[0] == 'E' else 'E'
+
+
+def get_legal_moves(position):
+    global p
+    x, y = position
+    directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
     move = []
-    global p, w, h
-    positions = list(map(lambda x: x[1], get_spec(eg)))
-    for position in positions:
-        move += get_move(position)
+    for direction in directions:
+        dx, dy = direction
+        if p[x + dx][y + dy] == '.':
+            move.append([x + dx, y + dy])
     return move
 
 
-def get_move(p):
-    global v, directions
-    pos = []
-    for m in directions:
-        np = [p[0] + m[0], p[1] + m[1]]
-        t = v[np[0]][np[1]]
-        if t[0] == '.':
-            pos.append(t[1])
-    return pos
-
-
-def print_distance_matrix(distance):
-    for y in range(h):
-        for x in range(w):
-            value = distance[x][y]
-            print('-' if value < 0 else value, end=' ')
-        print()
-
-
-def calc_distance(position):
+def get_distance_matrix(position):
     global p, w, h
     x, y = position
-    distance = [[-1 for i in range(h)] for j in range(w)]
+    distance = [[-1 for y in range(h)] for x in range(w)]
     distance[x][y] = 0
-    positions = get_move(position)
+    positions = get_legal_moves(position)
     depth = 0
     while len(positions) > 0:
         depth += 1
@@ -129,180 +99,164 @@ def calc_distance(position):
             x, y = position
             if distance[x][y] < 0:
                 distance[x][y] = depth
-                new_positions += get_move(position)
+                new_positions += get_legal_moves(position)
         positions = new_positions
     return distance
 
 
-def get_path(source, target):
-    distance = calc_distance(source)
-    x, y = target
+def get_closest_position(player):
+    _, player_position, _, _ = player
+    distance = get_distance_matrix(player_position)
+    enemy_player_type = get_enemy_player_type(player)
+    enemy_players = get_players_by_type(enemy_player_type)
+    enemy_players_moves = []
+    for enemy_player in enemy_players:
+        enemy_player_position = enemy_player[1]
+        enemy_player_moves = get_legal_moves(enemy_player_position)
+        for enemy_player_move in enemy_player_moves:
+            enemy_players_moves.append(enemy_player_move)
+    get_sorted_positions(enemy_players_moves)
+    enemy_players_moves = list(filter(lambda x: distance[x[0]][x[1]] > 0, enemy_players_moves))
+    min_distance_position = []
+    if enemy_players_moves:
+        min_distance_position = min(enemy_players_moves, key=lambda x: distance[x[0]][x[1]])
+    return min_distance_position
+
+
+def get_path(player):
+    directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
+    player_type, player_position, hp, active = player
+    target_position = get_closest_position(player)
+    if not target_position:
+        return []
+    distance = get_distance_matrix(player_position)
+    x, y = target_position
     value = distance[x][y]
-    path = [target]
+    path = [target_position]
     while value > 0:
         value -= 1
         for direction in directions:
-            x, y = target
+            x, y = target_position
             dx, dy = direction
             x, y = x + dx, y + dy
             if distance[x][y] == value:
-                target = [x, y]
-                path.append(target)
+                target_position = [x, y]
+                path.append(target_position)
                 break
     path.reverse()
     return path
 
 
-def get_nearest(source, targets):
-    distance = calc_distance(source)
-    dist_pos = list(map(lambda x: distance[x[0]][x[1]], targets))
-    # min_val = reduce(lambda x, y: x if x < y else y, dist_pos)
-    dist_pos = list(filter(lambda x: x >= 0, dist_pos))
-    if len(dist_pos) == 0:
-        return []
-    min_val = min(dist_pos)
-
-    min_dist_pos = list(filter(lambda x: distance[x[0]][x[1]] == min_val, targets))
-    min_dist_pos.sort(key=lambda x: x[1]*10000 + x[0])
-    return min_dist_pos[0]
+def move_player(player, target_pos):
+    global p
+    sx, sy = player[1]
+    tx, ty = target_pos
+    player_type = p[sx][sy]
+    p[sx][sy] = '.'
+    p[tx][ty] = player_type
+    player[1] = [tx, ty]
 
 
-def get_nearest_by_multiple_sources(sources, targets):
-    # targets = get_moves(targets)
-    nearest = []
-    for source in sources:
-        target = get_nearest(source, targets)
-        x, y = target
-        distance = calc_distance(source)
-        value = distance[x][y]
-        nearest.append([source, target, value])
-    nearest.sort(key=lambda x: x[2])
-    source, target, val = nearest[0]
-    return [source, target]
+def get_neighbour_enemy_players(player, players):
+    directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
+    player_type, player_position, hp, active = player
+    enemy_player_type = get_enemy_player_type(player)
+    x, y = player_position
+    source_moves = list(map(lambda d: [x + d[0], y + d[1]], directions))
+    player_list = list(filter(lambda x: x[1] in source_moves, players))
+    player_list = list(filter(lambda x: x[0] == enemy_player_type, player_list))
+    get_sorted_players(player_list)
+    return player_list
 
 
-def get_moves(p):
-    pos = []
-    for e in p:
-        pos += get_move(e)
-    return pos
+def get_neighbour_enemy_player(player, players):
+    active_players = list(filter(lambda x: x[3], players))
+    opp_players = get_neighbour_enemy_players(player, active_players)
+    if len(opp_players) == 0:
+        return None
+    opp_player = min(opp_players, key=lambda x: x[2])
+    return opp_player
 
 
-# Variables
-directions = [[0, -1], [-1, 0], [1, 0], [0, 1]]
-opponents_map = {'G': 'E', 'E': 'G'}
-v = init()
-w, h = len(v), len(v[0])
+def attack_enemy_player(opp_player, attack_hp):
+    global p
+    if opp_player:
+        opp_player[2] -= attack_hp
+        if opp_player[2] <= 0:
+            opp_player[3] = False
+            x, y = opp_player[1]
+            p[x][y] = '.'
 
-# Get Elfs
-elfs = get_spec('E')
 
-# Get Goblins (Targets)
-goblins = get_spec('G')
+def battle_ended(players):
+    goblins_alive = 'G' in [x[0] for x in players if x[3]]
+    elf_alive = 'E' in [x[0] for x in players if x[3]]
+    return not (goblins_alive and elf_alive)
 
-# Get target from Goblins
-em = get_spec_targets('G')
-#print_data(em)
 
-# In range
-pos = get_moves(extract(goblins))
-#print_data(pos)
+def battle(elf_attack):
+    round = 0
+    attack_map = {'E': elf_attack, 'G': 3}
+    players = get_players()
 
-# Reachable
-occ = get_all_pos(extract(elfs)[0])
-occ = tools.intersection(pos, occ)
+    while not battle_ended(players):
+        for player in players:
+            # Validate present player
+            player_active = player[3]
+            if not player_active:
+                continue
 
-# Get next move
-source = [2, 2]
-# nearest = get_nearest(source, [[5, 3], [5, 7], [6, 7], [7, 2], [6, 3], [1, 6]])
+            # Move present player
+            if not get_neighbour_enemy_player(player, players):
+                path = get_path(player)
+                if path:
+                    first_step = path[1]
+                    move_player(player, first_step)
 
-# Get all players
-#print_data([])
+            # Attack enemy player
+            enemy_player = get_neighbour_enemy_player(player, players)
+            get_enemy_player_type(player)
+            attack = attack_map[player[0]]
+            attack_enemy_player(enemy_player, attack)
 
-attack = 25
+            # Update round and check battle end
+            if player == players[-1]:
+                round += 1
+            elif battle_ended(players):
+                break
 
-players = get_players()
-# print_data(players)
-round = 0
-while len(set(list(map(lambda x: x[0], players)))) > 1:
-    round += 1
+        players = list(filter(lambda x: x[3], players))
+        get_sorted_players(players)
 
-    players = tools.sort_players_by_reading_order(players)
+    won = list(set([player[0] for player in players]))[0]
+    hp = sum(player[2] for player in players)
+    score = round * hp
+    num_of_elfs = [x[0] for x in players].count('E')
+    return score, won, num_of_elfs
 
-    for i in range(len(players)):
-        try:
-            pl = players[i]
-        except IndexError:
-            continue
 
-        if not pl:
-            continue
+def get_battle_score():
+    initialization()
+    result = battle(3)
+    return result[0]
 
-        pl_type, pl_pos, pl_hp = pl
-        op_pl_type = opponents_map[pl_type]
 
-        op_player_pos = get_neighbours(pl)
+def get_elf_survival_battle_score():
+    initialization()
+    number_of_elfs = [x[0] for x in get_players()].count('E')
+    max_elf_attack = 10000
+    for attack in range(3, max_elf_attack):
+        initialization()
+        result = battle(attack)
+        if result[2] == number_of_elfs:
+            return result[0]
+    return None
 
-        if len(op_player_pos) > 0:
 
-            players_filter = list(filter(lambda x: x, players))
-            op_player = list(filter(lambda x: tools.is_in(op_player_pos, x[1]), players_filter))
-            op_player = min(op_player, key=lambda x: x[2])
-            op_player[2] -= attack if op_player[0] == 'G' else 3
-            if op_player[2] <= 0:
-                x, y = op_player[1]
-                v[x][y][0] = '.'
-                players_filter = list(filter(lambda x: x, players))
-                players = list(map(lambda x: None if x[2] <= 0 else x, players_filter))
-            continue
+def initialization():
+    global p, w, h
+    p, w, h = initialization_input('Input/input_day_15_original.txt')
 
-        players_filter = list(filter(lambda x: x, players))
-        op_pl = list(filter(lambda x: x[0] == op_pl_type, players_filter))
-        op_pl = extract(op_pl)
-        targets_op_pl = get_moves(op_pl)
 
-        if len(targets_op_pl) == 0:
-            continue
-
-        target = get_nearest(pl_pos, targets_op_pl)
-
-        if len(target) == 0:
-            continue
-
-        path = get_path(pl_pos, target)
-        fx, fy = path[0]
-        tx, ty = path[1]
-        val = v[fx][fy][0]
-        v[fx][fy][0] = '.'
-        v[tx][ty][0] = val
-        players[i] = [pl_type, [tx, ty], pl_hp]
-
-        op_player_pos = get_neighbours(players[i])
-
-        if len(op_player_pos) > 0:
-            players_filter = list(filter(lambda x: x, players))
-            op_player = list(filter(lambda x: tools.is_in(op_player_pos, x[1]), players_filter))
-            op_player = min(op_player, key=lambda x: x[2])
-            op_player[2] -= attack if op_player[0] == 'G' else 3
-            if op_player[2] <= 0:
-                x, y = op_player[1]
-                p[x][y][0] = '.'
-                players_filter = list(filter(lambda x: x, players))
-                players = list(map(lambda x: None if x[2] <= 0 else x, players_filter))
-            continue
-    #players = list(filter(lambda x: x, players))
-    players = tools.sort_players_by_reading_order(players)
-    if round > 28:
-        print(players)
-    # print('Round:', round)
-    # print_data([])
-    # print(players)
-
-points = sum(list(map(lambda x: x[2], players)))
-print_data([])
-print('Round:', round, 'hp:', points)
-print('points', (round - 1) * points)
-print(players)
-print(len(players))
-# print_data([])
-# 227460, 230136, 232812, 42255
+print('Part 1:', get_battle_score())
+print('Part 2:', get_elf_survival_battle_score())
