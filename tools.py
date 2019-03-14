@@ -3,6 +3,13 @@ import re
 from functools import reduce
 
 
+# List comprehension way
+# The list of lists
+array = [range(4), range(7)]
+
+# Flatten the lists
+flattened_list = [y for x in array for y in x]
+
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3

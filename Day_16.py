@@ -10,7 +10,6 @@ def is_in(v, e):
 
 
 def initialization():
-    global fc, fc_name
     f = open('Input/input_day_16.txt', 'r')
     in_data = f.read()
     f.close()
@@ -25,7 +24,17 @@ def initialization():
     re_after_trim = [x.replace(' ', '').split(',') for x in re_after]
     re_after_int = [[int(y) for y in x] for x in re_after_trim]
 
-    return list(zip(re_before_int, re_operation_int, re_after_int))
+    rows = in_data.splitlines()
+    while True:
+        if '' in rows:
+            rows = rows[rows.index('') + 1:]
+        else:
+            break
+
+    val = [[int(y) for y in x.split(' ')] for x in rows]
+    print(val)
+
+    return list(zip(re_before_int, re_operation_int, re_after_int)), val
 
 
 def operation(input_val):
@@ -76,30 +85,66 @@ def operation(input_val):
     return val_0, [fc_name[x] for x in indices]
 
 
-values = initialization()
-opcodes = [operation(x) for x in values]
-op_code_dic = {}
+def calculate_number_of_opcodes(opcodes):
+    dictionary = {}
+    for x in opcodes:
+        dictionary[x[0]] = list(set(dictionary[x[0]] + x[1]) if x[0] in dictionary else [])
+    filtered_list = [x[0] for x in dictionary.items() if len(x[1]) >= 3]
+    filtered_opcodes = [x for x in opcodes if x[0] in filtered_list]
+    return len(filtered_opcodes)
+
+
+def solve_opcodes():
+    global x, opcodes
+    op_code_dic = {}
+    for x in opcodes:
+        op_code_dic[x[0]] = list(set(op_code_dic[x[0]]) & set(x[1]) if x[0] in op_code_dic else x[1])
+    opcodes = sorted(op_code_dic.items(), key=lambda x: x[0])
+    while [x for x in opcodes if len(x[1]) > 1]:
+        for q in [x for x in opcodes if len(x[1]) == 1]:
+            for t in opcodes:
+                if q[1][0] in t[1] and len(t[1]) > 1:
+                    t[1].remove(q[1][0])
+
+
+def operation_(reg, op, dec):
+    code, a, b, c = op
+    oper = [
+        ('addr', reg[a] + reg[b]),
+        ('addi', reg[a] + b),
+        ('mulr', reg[a] * reg[b]),
+        ('muli', reg[a] * b),
+        ('banr', reg[a] & reg[b]),
+        ('bani', reg[a] & b),
+        ('borr', reg[a] | reg[b]),
+        ('bori', reg[a] | b),
+        ('setr', reg[a]),
+        ('seti', a),
+        ('gtir', 1 if a > reg[b] else 0),
+        ('gtri', 1 if reg[a] > b else 0),
+        ('gtrr', 1 if reg[a] > reg[b] else 0),
+        ('eqir', 1 if a == reg[b] else 0),
+        ('eqri', 1 if reg[a] == b else 0),
+        ('eqrr', 1 if reg[a] == reg[b] else 0)
+    ]
+
+    reg[c] = [x[1] for x in oper if dec[code] in x[0]][0]
+    return reg
+
+
+# PART 1
+op_values, test_values = initialization()
+opcodes = [operation(x) for x in op_values]
+result_1 = calculate_number_of_opcodes(opcodes)
+
+
+# PART 2
+solve_opcodes()
+dec = {}
 for x in opcodes:
-    op_code_dic[x[0]] = list(set(op_code_dic[x[0]] + x[1]) if x[0] in op_code_dic else [])
+    dec[x[0]] = x[1][0]
+reg = [0, 0, 0, 0]
+result_2 = [operation_(reg, x, dec) for x in test_values][-1:][0][0]
 
-filtered_list = [x[0] for x in op_code_dic.items() if len(x[1]) >= 3]
-filtered_opcodes = [x for x in opcodes if x[0] in filtered_list]
-result_1 = len(filtered_opcodes)
-print(result_1)
-
-
-op_code_dic = {}
-for x in opcodes:
-    op_code_dic[x[0]] = list(set(op_code_dic[x[0]]) & set(x[1]) if x[0] in op_code_dic else x[1])
-
-opcodes = sorted(op_code_dic.items(), key=lambda x: x[0])
-
-while [x for x in opcodes if len(x[1]) > 1]:
-    for q in [x for x in opcodes if len(x[1]) == 1]:
-        for t in opcodes:
-            if q[1][0] in t[1] and len(t[1]) > 1:
-                t[1].remove(q[1][0])
-
-for x in opcodes:
-    print(x)
-
+print("Result part 1: ", result_1)
+print("Result part 2: ", result_2)
