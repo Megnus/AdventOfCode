@@ -32,8 +32,6 @@ def initialization():
             break
 
     val = [[int(y) for y in x.split(' ')] for x in rows]
-    print(val)
-
     return list(zip(re_before_int, re_operation_int, re_after_int)), val
 
 
