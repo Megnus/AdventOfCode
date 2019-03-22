@@ -10,6 +10,7 @@ array = [range(4), range(7)]
 # Flatten the lists
 flattened_list = [y for x in array for y in x]
 
+
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3
@@ -51,3 +52,8 @@ def sort_players_by_reading_order(players):
     players = list(filter(lambda x: x, players))
     players.sort(key=lambda x: x[1][1]*10000 + x[1][0])
     return players
+
+
+# lambda x, xs: [i for (y, i) in zip(xs, range(len(xs))) if x == y]
+def get_indexes(val, vec):
+    return [i for (y, i) in zip(vec, range(len(vec))) if val == y]

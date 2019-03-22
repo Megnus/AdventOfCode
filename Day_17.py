@@ -1,16 +1,8 @@
 import re
 
 
-def is_in(v, e):
-    try:
-        v.index(e)
-        return True
-    except ValueError:
-        return False
-
-
 def initialization():
-    f = open('Input/input_day_17_test.txt', 'r')
+    f = open('Input/input_day_17.txt', 'r')
     in_data = f.read()
     f.close()
     in_data_x = re.findall('x=.+y=.+', in_data)
@@ -29,65 +21,80 @@ def create_vector(data_xy):
     return [x for y in vec_x + vec_y for x in y]
 
 
-def print_matrix():
-    for i in range(0, max_row):
-        for j in range(494, max_col):
-            print(matrix[i][j], end='', flush=True)
+def print_streams():
+    for i in range(0, 100):
+        for j in range(480, max_col):
+            print(space[i][j], end='', flush=True)
         print()
 
 
 def check_empty(target, dv):
-    global matrix, max_col, max_row
     dx, dy = dv
     x, y = target
     x, y = x + dx, y + dy
-    return matrix[y][x] == '.' or matrix[y][x] == '|'
+    return space[y][x] == '.' or space[y][x] == '|'
 
 
 def init_values():
-    global right, left, down, matrix, max_col, max_row, data
-    right, left, down = [1, 0], [-1, 0], [0, 1]
+    global right, left, down, halt, space, max_col, max_row, min_row, data, start
+    right, left, down, halt = [1, 0], [-1, 0], [0, 1], [0, 0]
+    start = [[500, 0], down]
     data = create_vector(initialization())
-    max_col = max(data, key=lambda x: x[0])[0] + 2
-    max_row = max(data, key=lambda x: x[1])[1] + 4
-    matrix = [['.' for _ in range(0, max_col)] for _ in range(0, max_row)]
+    max_col = max(data, key=lambda x: x[0])[0] + 1
+    max_row = max(data, key=lambda x: x[1])[1] + 1
+    min_row = min(data, key=lambda x: x[1])[1]
+    space = [['.' for _ in range(0, max_col)] for _ in range(0, max_row)]
     for v in data:
         col, row = v
-        matrix[row][col] = '#'
+        space[row][col] = '#'
 
 
-def step(target, dv):
-    global matrix, right, left, down, max_row
-    dx, dy = dv
-    x, y = target
-    matrix[y][x] = '|'
-    try:
-        if dy == 0 and check_empty(target, down):
-            step(target, down)
-            return
-        elif dy == 1 and not check_empty(target, down):
-            step(target, left)
-            step(target, right)
-            return
-        elif dy == 0 and not check_empty(target, dv):
-            return
-        step([x + dx, y + dy], dv)
-    except IndexError:
-        return
+def create_stream_layer(position, direction):
+    col_direction, _ = direction
+    col, row = position
+    while space[row][col] == '|':
+        col -= col_direction
+    if space[row][col] == '#':
+        col, row = position
+        while space[row][col] == '|':
+            space[row][col] = '~'
+            col -= col_direction
+            
+
+def pour_water():
+    while '|' not in space[max_row - 1]:
+        streams = [start]
+        while streams:
+            try:
+                stream = streams.pop()
+                position, direction = stream
+                col_direction, row_direction = direction
+                col, row = position
+                if check_empty(position, halt):
+                    space[row][col] = '|'
+                    if row_direction == 0 and check_empty(position, down):
+                        streams.append([position, down])
+                    elif row_direction == 1 and not check_empty(position, down):
+                        streams.append([position, right])
+                        streams.append([position, left])
+                    elif row_direction == 0 and not check_empty(position, direction):
+                        create_stream_layer(position, direction)
+                    else:
+                        position = [col + col_direction, row + row_direction]
+                        stream = [position, direction]
+                        streams.append(stream)
+            except IndexError:
+                continue
 
 
-def fill():
-    step([500, 0], [0, 0])
-    get_indexes = lambda x, xs: [i for (y, i) in zip(xs, range(len(xs))) if x == y]
-    pool = list(filter(lambda x: x != [], [get_indexes('|', x) for x in matrix]))
-    index = len(pool) - 1
+def count_water():
+    sum_streams = sum([len([x for x in y if x == '|']) for y in space]) - min_row
+    sum_water = sum([len([x for x in y if x == '~']) for y in space])
+    return sum_streams + sum_water, sum_water
     
-    if index < max_row - 1:
-        for x in pool[index]:
-            matrix[index][x] = '~'
-        fill()
-        
 
 init_values()
-fill()
-print_matrix()
+pour_water()
+result_1, result_2 = count_water()
+print("Result part 1: ", result_1)
+print("Result part 2: ", result_2)
