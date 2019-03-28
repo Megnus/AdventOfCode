@@ -1,7 +1,5 @@
 def initialization():
 	global data, ip, max_lines
-	f = open('Input/input_day_19_test.txt', 'r')
-	f = open('Input/input_day_19_seng.txt', 'r')
 	f = open('Input/input_day_19.txt', 'r')
 	in_data = f.read()
 	f.close()
