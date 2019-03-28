@@ -1,14 +1,6 @@
 import copy
 
 
-def print_fields():
-    print()
-    for i in fields:
-        for j in i:
-            print(j, end='', flush=True)
-        print()
-
-
 def initialization():
     global fields, max_row, max_col
     f = open('Input/input_day_18.txt', 'r')
@@ -26,21 +18,9 @@ def get_adjacent(point):
     sq = list(filter(lambda v: 0 <= v[0] < max_row and 0 <= v[1] < max_col, sq))
     sp = [fields[y][x] for x, y in sq]
     return sp
-    # print(list(zip(sq, sp)))
-    # for i in sq:
-    #     for j in i:
-    #         print(j, end='', flush=True)
-    #     print()
 
 
 def get_new_item(point):
-    # items = ['.', '|', '#']
-    # ar = get_adjacent(point)
-    # index = items.index(point)
-    # func = [
-    #     lambda:
-    # ]
-    # new_fields = fields.copy()
     ar = get_adjacent(point)
     x, y = point
     if fields[y][x] == '.' and ar.count('|') >= 3:
@@ -58,73 +38,28 @@ def create_fields():
     return [[get_new_item([x, y]) for x in range(0, max_col)] for y in range(0, max_row)]
 
 
-def create_fields_by_time(time):
-    global fields
-    f_ar = list()
-    for t in range(1, time + 1):
-        fields = create_fields()
-        # f_ar.append(fields.deepcopy())
-        #print('Time: ', t)
-        #print_fields()
-
-
 def itr_fields():
     global fields
-    f_ar = list()
+    ten_minutes_index = 10 - 1
+    index = 1000000000 - 1
+    fields_array = list()
     while True:
         fields = create_fields()
-        if fields in f_ar:
-            last_index = len(f_ar)
-            index = f_ar.index(fields)
-            # 1000000000
-            idx = (1000000000 - 1 - last_index) % (last_index - index)
-            print('INDEX: ', f_ar.index(fields))
-            return f_ar[idx + index]
-        # f_ar.append(fields.deepcopy())
-        f_ar.append(copy.deepcopy(fields))
-        #print('Time: ', t)
-        #print_fields()
+        if fields in fields_array:
+            length = len(fields_array)
+            repetative_index = fields_array.index(fields)
+            equivalent_index = (index - length) % (length - repetative_index)
+            break
+        fields_array.append(copy.deepcopy(fields))
+    return fields_array[ten_minutes_index], fields_array[equivalent_index + repetative_index]
+    
 
-
-def get_result():
-    # create_fields_by_time(5)
+def get_result(fields):
     flatten = [y for x in fields for y in x]
-
-    # nf = copy.deepcopy(fields)
-    # ar = ['x', nf]
-    # nf[0][0] = '~'
-    # print(fields[0][0])
-    # print(nf[0][0])
-    # print(nf == fields)
-    # print('index: ', fields in ar)
-    # nf[0][0] = '|'
-    # print(nf == fields)
-    # print('index: ', ar.index(fields))
-
-
     return flatten.count('|') * flatten.count('#')
 
 
-#initialization()
-#create_fields_by_time(10)
-#print(get_result())
-
-
 initialization()
-fields = itr_fields()
-get_result()
-#count_adjacent([3, 9])
-# fields = get_new_item([7, 0])
-# print_fields()
-# create_fields_by_time(10)
-
-
-print(get_result())
-
-# 191196
-
-# > 42818
-# > 45216
-# > 49749
-# != 194449
-# ? 195160
+part_1_fields, part_2_fields = itr_fields()
+print("Result part 1: ", get_result(part_1_fields))
+print("Result part 2: ", get_result(fields))
