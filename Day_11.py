@@ -5,10 +5,10 @@ def power(x, y, sn):
 
 sn = 5719
 #print(power(101, 153, 5719))
-matrix = [[0 for x in range(300)] for y in range(300)]
+path = [[0 for x in range(300)] for y in range(300)]
 for x in range(0, 300):
     for y in range(0, 300):
-        matrix[x][y] = power(x, y, sn)
+        path[x][y] = power(x, y, sn)
 
 powerM = [[[0 for k in range(300)] for x in range(300)] for y in range(300)]
 
@@ -21,7 +21,7 @@ for x in range(0, 300):
             area = 0
             for i in range(0, k):
                 for j in range(0, k):
-                    area += matrix[x + i][y + j]
+                    area += path[x + i][y + j]
             powerM[x][y][k] += area
 
 #m = max(map(max, powerM))
