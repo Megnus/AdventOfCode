@@ -50,27 +50,37 @@ def explore(string, start, end_char):
 			path.append([char, checkpoint])
 			print(char, end=' ')
 		elif char == '(':
-			path.append(char)
+			# path.append(char)
 			index += explore(string[index:], checkpoint, ')')
 		elif char == '|':
 			checkpoint = start
-			path.append(char)
+			# path.append(char)
+			print('')
 		elif char == end_char:
-			path.append(char)
+			# path.append(char)
+			print('')
 			return index
 	return 0
-		
-	#return matrix
 
 
 data = initialization()
-#data = [map[x] for x in data] # if x not in '(|)']
 end_char = '$'
 print(list(data))
 explore(list(data), (0, 0), end_char)
+koordinates = [e[1] for e in path]
+x_max = max([p[0] for p in koordinates])
+x_min = min([p[0] for p in koordinates])
+y_max = max([p[1] for p in koordinates])
+y_min = min([p[1] for p in koordinates])
+print(x_min, x_max, y_min, y_max)
+print(x_max - x_min, y_max - y_min)
+print('start: ', -x_min, -y_min)
+fields = [['*' for col in range(2 * (x_max - x_min))] for row in range(2 * (y_max - y_min))]
+start = (-x_min * 2, -y_min * 2)
+print(start)
 print(data)
 print(path)
-
+print(fields)
 
 """
 print("Result part 1: ", result_1)
