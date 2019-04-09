@@ -76,7 +76,11 @@ print(x_min, x_max, y_min, y_max)
 print(x_max - x_min, y_max - y_min)
 print('start: ', -x_min, -y_min)
 fields = [['*' for col in range(2 * (x_max - x_min))] for row in range(2 * (y_max - y_min))]
-start = (-x_min * 2, -y_min * 2)
+start = [-x_min * 2, -y_min * 2]
+koordinates = [[x[0] * 2 + start[0], x[1] * 2 + start[1]] for x in koordinates]
+koordinates = start + koordinates;
+print(koordinates)
+
 print(start)
 print(data)
 print(path)
