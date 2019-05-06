@@ -83,7 +83,7 @@ print('start: ', -x_min, -y_min)
 start = [-x_min, -y_min]
 koordinates = [start] + [[x[0] + start[0], x[1] + start[1]] for x in koordinates]
 for x in koordinates:
-	print(x)
+    print(x)
 
 fields = [['#' for col in range(x_max - x_min + 1)] for row in range(y_max - y_min + 1)]
 print('-----------------')
