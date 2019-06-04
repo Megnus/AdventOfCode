@@ -103,7 +103,7 @@ for col, row in koordinates:
     fields[row][col] = ' . '
 
 # fields[-y_min][-x_min] = 'X'
-fields.reverse()
+#fields.reverse()
 
 for x in fields:
     print(x)
@@ -120,31 +120,39 @@ fields[row][col] = f"{steps:03d}"
 
 
 while tracks:
-    print(tracks)
+
     steps += 1
     positions = []
     for col, row in tracks:
         for v in ar:
             x, y = v
             try:
-                if fields[row + y][col + x] == ' . ':
-                    fields[row + y][col + x] = f"{steps:03d}"
+                # print([col + x, row + y], fields[row + y][col + x])
+                if fields[row + y][col + x] == ' . ' and col + x >= 0 and row + y >= 0:
+                    if steps % 2 == 1:
+                        m = int(((steps + 1) / 2))
+                        fields[row + y][col + x] = f"{m:03d}"
                     positions.append([col + x, row + y])
+                    # print(fields[row + y][col + x], positions)
             except IndexError:
                 pass
     tracks = positions
+    # print(tracks)
+    # for x in fields:
+    #     print(x)
+    # print()
     
 for x in fields:
     print(x)
     
-for row in fields:
-    for el in row:
-        try:
-            print(int(el))
-        except:
-            pass
+# for row in fields:
+#     for el in row:
+#         try:
+#             print(int(el))
+#         except:
+#             pass
 
 flat_list = max([int(item) for sublist in fields for item in sublist if item.isdigit()])
 print(flat_list)
-
+# >  3391 (6782) > 4185
 print(f"{1:03d}")
