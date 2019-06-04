@@ -111,14 +111,6 @@ for x in fields:
 print()
 ar = [(0, 1), (-1, 0), (1, 0), (0, -1)]
 
-"""
-my = []
-for x in ar:
-    # ar.clear()
-    my.append(x)
-    print(x)
-print(my)
-"""
 print()
 tracks = []
 tracks.append(start)
@@ -140,12 +132,19 @@ while tracks:
                     positions.append([col + x, row + y])
             except IndexError:
                 pass
-    #print(positions)
-
     tracks = positions
-
-
+    
 for x in fields:
     print(x)
+    
+for row in fields:
+    for el in row:
+        try:
+            print(int(el))
+        except:
+            pass
+
+flat_list = max([int(item) for sublist in fields for item in sublist if item.isdigit()])
+print(flat_list)
 
 print(f"{1:03d}")
