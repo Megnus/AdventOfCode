@@ -90,5 +90,5 @@ while tracks:
 flat_list = max([int(item) for sublist in fields for item in sublist if item.isdigit()])
 last = max(doors)
 size = len(list(filter(lambda x: x >= 1000, doors)))
-print('Part 1: ', last)
-print('Part 2: ', size)
+print("Result part 1: ", last)
+print("Result part 2: ", size)

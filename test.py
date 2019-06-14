@@ -1,5 +1,8 @@
+import _thread
 import tools
 import math
+import time
+
 
 def extract(u):
     global v
@@ -206,3 +209,16 @@ exit()
 for p in positions:
     print(p[2], ':', [p[0], p[1]])
 
+
+
+# Create two threads as follows
+try:
+	for i in range(0, 200):
+        _thread.start_new_thread(calc_primes, 4321412341253325454645762431352653475325421354364, )
+        time.sleep(1)
+except:
+	print("Error: unable to start thread")
+
+while True:
+	pass
+ 

@@ -1,8 +1,3 @@
-import _thread
-import math
-import time
-
-
 def initialization():
 	global data, ip, max_lines
 	f = open('Input/input_day_21.txt', 'r')
@@ -22,35 +17,20 @@ def operation(r, operation):
 
 
 def execute(register):
-	print("Starting thread: ", register)
-	values = set()
-	d = 0
-	num = 0
-	while register[ip] < max_lines:
+	initialization()
+	reg_values = []
+	while True:
 		instruction = data[register[ip]]
 		if register[ip] == 18:
-			d = int(register[4] / 256)
-			c = 1
-			b = 25
-			register[3] = d
-			register[2] = c
-			register[1] = b
-		
-		#print(register)
+			a, _, _, _, e, f = register
+			register = [a, 25, 1, int(register[4] / 256), e, f]
 		if register[ip] == 28:
-			values.add(register[5])
-			if len(values) > num:
-				print(len(values), register[5])
-			num = len(values)
-			# print(len(values), register[5], values, register[3], d, register[2], c)
-			
-		#print(register[ip], instruction, register)
+			if register[5] in reg_values:
+				return reg_values
+			reg_values.append(register[5])
 		register = operation(register, instruction)
 		register[ip] += 1
-		# time.sleep(1)
-
-	return register[0]
-
+	
 
 operations = {
 	'addr': lambda a, b, r: r[a] + r[b],
@@ -70,25 +50,8 @@ operations = {
 	'eqri': lambda a, b, r: 1 if r[a] == b else 0,
 	'eqrr': lambda a, b, r: 1 if r[a] == r[b] else 0}
 
-initialization()
-result_1 = execute([1, 0, 0, 0, 0, 0])
-# 3941014
 
-
-exit()
-
-
-# Create two threads as follows
-try:
-	for i in range(0, 200):
-		_thread.start_new_thread(execute, ([i, 0, 0, 0, 0, 0], ))
-		time.sleep(1)
-except:
-	print("Error: unable to start thread")
-
-while True:
-	pass
-
-# result_2 = execute([1, 0, 0, 0, 0, 0])
-# print("Result part 1: ", result_1)
-# print("Result part 2: ", result_2)
+values = execute([0, 0, 0, 0, 0, 0])
+result_1, result_2 = values[0], values.pop()
+print("Result part 1: ", result_1)
+print("Result part 2: ", result_2)
