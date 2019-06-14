@@ -120,9 +120,6 @@ def distance_calc(pos):
     return distance
 
 
-
-
-
 def get_spec(eg):
     global v, w, h
     p = []
@@ -193,32 +190,32 @@ exit()
 #g = get_spec('G')
 #e = get_spec('E')
 """
-pos = get_moves(extract(g))
+    pos = get_moves(extract(g))
+    print_data(v, pos)
+    """
 
-print_data(v, pos)
 """
-positions = rebase([2, 2], [], 0)
-positions = sorted(positions, key=lambda x: x[2])
-points = set([x[2] for x in positions])
-__positions = list(filter(lambda x: x[2] == 13, positions))
-
-_positions = list(filter(lambda x: x[2] == 1, positions))
-_positions = [[x[0], x[1]] for x in _positions]
-print_data(v, _positions)
-exit()
-for p in positions:
-    print(p[2], ':', [p[0], p[1]])
-
+    positions = rebase([2, 2], [], 0)
+    positions = sorted(positions, key=lambda x: x[2])
+    points = set([x[2] for x in positions])
+    __positions = list(filter(lambda x: x[2] == 13, positions))
+    
+    _positions = list(filter(lambda x: x[2] == 1, positions))
+    _positions = [[x[0], x[1]] for x in _positions]
+    print_data(v, _positions)
+    exit()
+    for p in positions:
+        print(p[2], ':', [p[0], p[1]])
+"""
 
 
 # Create two threads as follows
 try:
-	for i in range(0, 200):
+    for i in range(0, 200):
         _thread.start_new_thread(calc_primes, 4321412341253325454645762431352653475325421354364, )
         time.sleep(1)
 except:
-	print("Error: unable to start thread")
+    print("Error: unable to start thread")
 
 while True:
-	pass
- 
+    pass
