@@ -31,6 +31,6 @@ for x in range(max_x):
 		erosions[y][x] = erosion_level(geological_index((x, y), erosions))
 
 types = [[erosions[y][x] % 3 for x in range(max_x)] for y in range(max_y)]
-result_1 = sum([sum(x) for x in types]) - types[target_x][target_y]
+result_1 = sum([sum(x) for x in types]) - types[target_y][target_x]
 print("Result part 1: ", result_1)
 # print("Result part 2: ", result_2)
