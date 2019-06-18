@@ -21,6 +21,27 @@ def geological_index(v, erosions):
 	return erosions[y][x - 1] * erosions[y - 1][x]
 
 
+# rocky (.), wet (=), narrow (|)
+# torch, climbing, neither
+def time_calc(tool, type):
+	if not tool == 2 and type == 0:
+		return tool, 0
+	if not tool == 0 and type == 1:
+		return tool, 0
+	if not tool == 1 and type == 2:
+		return tool, 0
+	return 7
+
+
+def requierd_tool(type):
+	if type == 0:
+		return 0, 1
+	if type == 1:
+		return 1, 2
+	if type == 2:
+		return 0, 2
+
+
 initialization()
 target_x, target_y = target
 max_x, max_y = target_x + 1, target_y + 1
@@ -32,5 +53,17 @@ for x in range(max_x):
 
 types = [[erosions[y][x] % 3 for x in range(max_x)] for y in range(max_y)]
 result_1 = sum([sum(x) for x in types]) - types[target_y][target_x]
+
+
+
+
+
+
+
+
+
+
+
+
 print("Result part 1: ", result_1)
 # print("Result part 2: ", result_2)
