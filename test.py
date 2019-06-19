@@ -192,7 +192,7 @@ exit()
 """
     pos = get_moves(extract(g))
     print_data(v, pos)
-    """
+"""
 
 """
     positions = rebase([2, 2], [], 0)
@@ -207,7 +207,6 @@ exit()
     for p in positions:
         print(p[2], ':', [p[0], p[1]])
 """
-
 
 # Create two threads as follows
 try:
