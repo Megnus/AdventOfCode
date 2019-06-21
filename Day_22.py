@@ -3,11 +3,11 @@ import sys
 
 def initialization():
 	global depth, target, size
-	depth = 4080
 	target = (14, 785)
 	target = (10, 10)
 	x, y = target
-	size = x + int(x / 2) + 1, y + int(y / 2) + 1
+	size = x + 10, y + 10
+	depth = 4080
 	depth = 510
 
 
@@ -28,6 +28,15 @@ def geological_index(v, erosions):
 
 # rocky (.), wet (=), narrow (|)
 # torch, climbing, neither
+
+# rocky (.) = climbing, tourch (0, 1)
+# wet (=) = climbing, neither (2, 3)
+# narrow (|) = tourch, neither (0, 2)
+
+# tourch   : . |
+# climbing : . =
+# neiter   : = |
+
 def time_calc(tool, type):
 	if not tool == 2 and type == 0:
 		return tool, 0
@@ -50,15 +59,15 @@ def requierd_tool(type):
 def print_val():
 	for x in range(size_x):
 		for y in range(size_y):
-			score, _ = steps[y][x]
+			score, _ = steps_new[y][x]
 			print(f"{score:03d}", end=' ')
 		print()
 
 
 def print_type(types):
 	t = ['.', '=', '|']
-	for x in range(size_x):
-		for y in range(size_y):
+	for x in range(size_y):
+		for y in range(size_x):
 			print(t[types[y][x]], end=' ')
 		print()
 	print()
@@ -87,62 +96,94 @@ print_type(area)
 
 # area = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
 # sys.maxsize
-tools = [[set(requierd_tool(area[y][x])) for x in range(size_x)] for y in range(size_y)]
+tools = [[set(requierd_tool(area[y][x])) for y in range(size_x)] for x in range(size_y)]
+
+steps_new = [[0 for y in range(size_x)] for x in range(size_y)]
 
 t = ['.', '=', '|']
-for x in range(size_x):
-	for y in range(size_y):
-		print(t[area[y][x]], tools[y][x], end=' ')
-	print()
-print()
-steps = [[[999, set()] for y in range(size_y)] for x in range(size_x)]
+# for x in range(size_y):
+# 	for y in range(size_x):
+# 		print(t[area[y][x]], tools[y][x], end=' ')
+# 		steps_new[y][x] = [999, tools[y][x]]
+# 		# print(steps_new)
+# 	print()
+# print()
+# steps = [[[999, set()] for y in range(size_y)] for x in range(size_x)]
 
 dv = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 x, y = (0, 0)
-steps[0][0] = [0, tools[0][0]]
+# steps[0][0] = [0, tools[0][0]]
+steps_new[0][0] = [0, {0}]
 
-new_score = True
-while new_score:
-	new_score = False
-	for x in range(size_x - 1):
-		for y in range(size_y - 1):
-			# print(t[area[y][x]], tools[y][x], end=' ')
-			for dx, dy in dv:
-				print(steps[y][x])
-				score, tool = steps[y][x]
-				px, py = x + dx, y + dy
-				print(steps[py][px])
-				print(tool.intersection(tools[py][px]))
-				g = input();
-				
-				if px > size_x or py > size_y or px < 0 or py < 0:
-					continue
-				
-				new_tool = tools[py][px]
-				tool_in_hand = tool.intersection(new_tool)
-				print("tool_in_hand", tool_in_hand, "[px, py]", [px, py], "tool", tool, "new_tool", new_tool)
-				g = input();
-				
-				if tool_in_hand:
-					score += 1
-				else:
-					score += 8
-					tool_in_hand = new_tool
-				
-				if score < steps[py][px][0]:
-					steps[py][px] = [score, tool_in_hand]
-					new_score = True
-			
-				print(steps[py][px])
-				g = input();
-				
-		# print()
+# rocky (.), wet (=), narrow (|)
+# torch, climbing, neither
 
+# rocky (.) = climbing, tourch (0, 1)
+# wet (=) = climbing, neither (2, 3)
+# narrow (|) = tourch, neither (0, 2)
+
+# tourch   : . |
+# climbing : . =
+# neiter   : = |
+
+tourch = [[area[y][x] == 0 or area[y][x] == 2 for y in range(size_x)] for x in range(size_y)]
+climbing = [[area[y][x] == 0 or area[y][x] == 1 for y in range(size_x)] for x in range(size_y)]
+neiter = [[area[y][x] == 1 or area[y][x] == 2 for y in range(size_x)] for x in range(size_y)]
+
+print(tourch)
+print(size_x, size_y)
+
+for y in range(size_y):
+	for x in range(size_x):
+		if [x, y] == [14, 785]:
+			print('T', end=' ')
+		else:
+			print('.' if tourch[y][x] else 'x', end=' ')
+	print()
 print()
-print_val()
+
+scores = [[-1 for y in range(size_x)] for x in range(size_y)]
+scores[0][0] = 0
+
+changed = True
+while changed:
+	changed = False
+	for y in range(size_y - 1):
+		for x in range(size_x - 1):
+			if scores[y][x] > -1:
+				for dx, dy in dv:
+					if y + dy >= 0 and x + dx >= 0:
+						if scores[y + dy][x + dx] < 0 and tourch[y + dy][x + dx]:
+							scores[y + dy][x + dx] = scores[y][x] + 1
+							changed = True
 
 
+for y in range(size_y):
+	for x in range(size_x):
+		print(f"{scores[y][x]:03d}", end=' ')
+	print()
+print()
 
+input()
+
+for y in range(size_y):
+	for x in range(size_x):
+		if [x, y] == [14, 785]:
+			print('T', end=' ')
+		else:
+			print('.' if climbing[y][x] else 'x', end=' ')
+	print()
+print()
+input()
+
+for y in range(size_y):
+	for x in range(size_x):
+		if [x, y] == [14, 785]:
+			print('T', end=' ')
+		else:
+			print('.' if neiter[y][x] else 'x', end=' ')
+	print()
+print()
 
 
 
