@@ -4,6 +4,16 @@ import math
 import time
 
 
+def recover_secret(triplets):
+    word = ''
+    letters = set([j for sub in triplets for j in sub])
+    while letters:
+        word += {sum([x.index(a) for x in triplets if a in x]): a for a in letters}[0]
+        triplets = [list(filter(lambda x: x is not word[-1], sub)) for sub in triplets]
+        letters.remove(word[-1])
+    return word
+
+
 def extract(u):
     global v
     return list(map(lambda x: x[1], u))

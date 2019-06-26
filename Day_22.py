@@ -1,5 +1,4 @@
-import sys
-
+import numpy as np
 
 def initialization():
 	global depth, target, size
@@ -135,7 +134,7 @@ fields = [[False for y in range(size_x)] for x in range(size_y)]
 
 print(tourch)
 print(size_x, size_y)
-
+print('\ntourch')
 for y in range(size_y):
 	for x in range(size_x):
 		if [x, y] == [14, 785]:
@@ -145,10 +144,21 @@ for y in range(size_y):
 	print()
 print()
 
+print('climbing')
+for y in range(size_y):
+	for x in range(size_x):
+		if [x, y] == [14, 785]:
+			print('T', end=' ')
+		else:
+			print('.' if climbing[y][x] else 'x', end=' ')
+	print()
+print()
+
 scores = [[-1 for y in range(size_x)] for x in range(size_y)]
 scores[0][0] = 0
 
 print()
+print('nieter')
 for y in range(size_y):
 	for x in range(size_x):
 		if [x, y] == [14, 785]:
@@ -157,11 +167,67 @@ for y in range(size_y):
 			print('.' if neiter[y][x] else 'x', end=' ')
 	print()
 print()
-input()
+
+
 fields[0][0] = True
 tool = tourch
 changed = True
 changed1 = True
+tools = [tourch]
+
+
+p_ar = [[[0, 0], 0]]
+p_occ = []
+ntype = []
+b_ar = []
+tools = [tourch, neiter, climbing, tourch]
+
+for tool in tools:
+	while p_ar:
+		p, s = p_ar.pop()
+		# p_occ.append(p)
+		print(' --> ', p)
+		if p == [10, 10]:
+			print(p, s)
+		for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
+			x, y = p
+			x, y = x + dx, y + dy
+			# if [x, y] in p_occ:
+			# 	# print(np.array(p_ar).unravel_index(p_ar.argmax(), p_ar.shape))
+			# 	print([[i, j] for i, j in p_ar if i == [x, y]])
+			# 	print(' --- >', [x, y], p_ar)
+			# print(len(p_occ))
+			if [x, y] in [[4, 2], [4, 3], [4, 4], [4, 5], [4, 6], [4, 7], [4, 8]]:
+				print([[x, y], s + 1])
+			
+			print([[q, t, s + 1 if tool[y][x] else s + 8, s + 1 if tool[y][x] else s + 8 < t] for q, t in ntype if q == [x, y]])
+			
+			if 0 <= x < size_x and 0 <= y < size_y and [x, y] not in p_occ:
+				if tool[y][x]:
+					# ex = [[i, j] for i, j in p_ar if i == [x, y]]
+					# p_ar.append([[x, y], s + 1 if len(ex) == 0 else (s + 1 if s + 1 < ex[0][1] else ex[0][1])])
+					p_ar.append([[x, y], s + 1])
+					ntype.append([[x, y], s + 1])
+				else:
+					# ex = [[q, t] for q, t in b_ar if q == [x, y]]
+					# b_ar.append([[x, y], s + 1 if len(ex) == 0 else (s + 1 if s + 8 < ex[0][1] else ex[0][1])])
+					b_ar.append([[x, y], s + 8])
+					ntype.append([[x, y], s + 8])
+					# if len(ex) > 0:
+					# 	print(ex)
+					# 	_, sn = ex[0]
+					# 	if s + 1 < sn:
+					# 		b_ar.append([[x, y], s + 8])
+					# 		# p_ar.append([[x, y], s + 1])
+				p_occ.append([x, y])
+	
+	p_ar = b_ar.copy()
+	# print(list(map(lambda x: x[0], b_ar)))
+	print(b_ar)
+	b_ar.clear()
+
+
+exit()
 while changed:
 	changed = False
 
@@ -170,39 +236,52 @@ while changed:
 	# ... do stuff
 	# merge = merge.union(border)
 	# border = merge
-	for y in range(size_y - 1):
-		for x in range(size_x - 1):
-			if fields[y][x]: # and border[y][x]:
-				for dx, dy in dv:
-					if x + dx < 0 or y + dy < 0:
-						continue
-					print([x, y], '-> ')
-					if tool[y + dy][x + dx] and tool[y][x]:
-						print([x + dx, y + dy])
-					# if y + dy >= 0 and x + dx >= 0:
-
-					hola = False
-					if (scores[y + dy][x + dx] == -1 or scores[y][x] + 8 < scores[y + dy][x + dx]) and tool[y][x] and not tool[y + dy][x + dx]:
-						scores[y + dy][x + dx] = scores[y][x] + 8
-						border[y + dy][x + dx] = True
-						print('first')
-						hola = True
-					elif (scores[y + dy][x + dx] == -1 or scores[y + dy][x + dx] >= scores[y][x] + 1) and tool[y][x] and tool[y + dy][x + dx]:
-						scores[y + dy][x + dx] = scores[y][x] + 1
-						fields[y + dy][x + dx] = True
-						changed = True
-						print('second')
-						hola = True
-					if hola:
-						print('-----------------------------------')
-						for a in range(size_y - 1):
-							for b in range(size_x - 1):
-								print(f"{scores[a][b]:03d}", end=' ')
-							print()
-						print()
-						print('-----------------------------------')
-						#input()
-
+	#
+	for tool in tools:
+		temp = fields
+		print(temp, fields)
+		for y in range(size_y - 1):
+			for x in range(size_x - 1):
+				if fields[y][x]: # and border[y][x]:
+					for dx, dy in dv:
+						if x + dx < 0 or y + dy < 0:
+							continue
+						#print([x, y], '-> ')
+						if tool[y + dy][x + dx] and tool[y][x]:
+							print([x + dx, y + dy])
+						# if y + dy >= 0 and x + dx >= 0:
+	
+						# hola = False
+						if (scores[y + dy][x + dx] == -1 or scores[y][x] + 8 < scores[y + dy][x + dx]) and tool[y][x] and not tool[y + dy][x + dx]:
+							scores[y + dy][x + dx] = scores[y][x] + 8
+							border[y + dy][x + dx] = True
+							#print('first')
+							hola = True
+						elif (scores[y + dy][x + dx] == -1 or scores[y + dy][x + dx] >= scores[y][x] + 1) and tool[y][x] and tool[y + dy][x + dx]:
+							scores[y + dy][x + dx] = scores[y][x] + 1
+							fields[y + dy][x + dx] = True
+							changed = True
+							#print('second')
+							# hola = True
+						# if hola:
+						# 	print('-----------------------------------')
+						# 	for a in range(size_y - 1):
+						# 		for b in range(size_x - 1):
+						# 			print(f"{scores[a][b]:03d}", end=' ')
+						# 		print()
+						# 	print()
+						# 	print('-----------------------------------')
+	
+		fields = temp
+		print(temp, fields)
+		for y in range(size_y):
+			for x in range(size_x):
+				print(f"{scores[y][x]:03d}", end=' ')
+			print()
+		print()
+		input()
+		
+	print('New tool')
 	for y in range(size_y - 1):
 		for x in range(size_x - 1):
 			fields[y][x] = False
@@ -210,16 +289,12 @@ while changed:
 				fields[y][x] = True
 				border[y][x] = False
 
-	for y in range(size_y):
-		for x in range(size_x):
-			print(f"{scores[y][x]:03d}", end=' ')
-		print()
-	print()
-	input()
+
 	# if not changed:
-	tool = climbing
+	tool = neiter
 	changed = True
 	# changed1 = False
+	tools = [climbing, tourch, neiter]
 
 print()
 print("--------")
@@ -258,14 +333,6 @@ for y in range(size_y):
 			print('.' if neiter[y][x] else 'x', end=' ')
 	print()
 print()
-
-
-
-
-
-
-
-
 
 
 # print("Result part 2: ", result_2)
