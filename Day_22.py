@@ -16,7 +16,10 @@ def erosion_level(geologic_index):
 
 def geological_index(v, erosions):
 	x, y = v
+
 	if v == (0, 0):
+		return 0
+	if v == target:
 		return 0
 	if y == 0:
 		return x * 16807
@@ -65,9 +68,12 @@ def print_val():
 
 def print_type(types):
 	t = ['.', '=', '|']
-	for x in range(size_y):
-		for y in range(size_x):
-			print(t[types[y][x]], end=' ')
+	for x in range(size_x):
+		for y in range(size_y):
+			if [x, y] == [10, 10]:
+				print('T', end=' ')
+			else:
+				print(t[types[y][x]], end=' ')
 		print()
 	print()
 
@@ -126,18 +132,35 @@ steps_new[0][0] = [0, {0}]
 # neiter   : = |
 
 tourch = [[area[y][x] == 0 or area[y][x] == 2 for y in range(size_x)] for x in range(size_y)]
-climbing = [[area[y][x] == 0 or area[y][x] == 1 for y in range(size_x)] for x in range(size_y)]
-neiter = [[area[y][x] == 1 or area[y][x] == 2 for y in range(size_x)] for x in range(size_y)]
+climbing = [[[x, y] != [10, 10] and (area[y][x] == 0 or area[y][x] == 1) for y in range(size_y)] for x in range(size_x)]
+neiter = [[[x, y] != [10, 10] and (area[y][x] == 1 or area[y][x] == 2) for y in range(size_x)] for x in range(size_y)]
 border = [[False for y in range(size_x)] for x in range(size_y)]
 new_border = [[False for y in range(size_x)] for x in range(size_y)]
 fields = [[False for y in range(size_x)] for x in range(size_y)]
 
 print(tourch)
 print(size_x, size_y)
+print('\nall')
+
+for x in range(size_x):
+	for y in range(size_y):
+		if [x, y] == [10, 10]:
+			print(area[y][x], end='_')
+		else:
+			print(area[y][x], end=' ')
+		# if [x, y] == [10, 10]:
+		# 	print('T', end=' ')
+		# elif area[y][x] == 0 or area[y][x] == 1:
+		# 	print('.', end=' ')
+		# else:
+		# 	print('x', end=' ')
+	print()
+print()
+
 print('\ntourch')
 for y in range(size_y):
 	for x in range(size_x):
-		if [x, y] == [14, 785]:
+		if [x, y] == [10, 10]:
 			print('T', end=' ')
 		else:
 			print('.' if tourch[y][x] else 'x', end=' ')
@@ -147,8 +170,8 @@ print()
 print('climbing')
 for y in range(size_y):
 	for x in range(size_x):
-		if [x, y] == [14, 785]:
-			print('T', end=' ')
+		if [x, y] == [10, 10]:
+			print('.' if climbing[y][x] else 'x', end='<')
 		else:
 			print('.' if climbing[y][x] else 'x', end=' ')
 	print()
@@ -175,56 +198,62 @@ changed = True
 changed1 = True
 tools = [tourch]
 
+# print(np.array(p_ar).unravel_index(p_ar.argmax(), p_ar.shape))
 
 p_ar = [[[0, 0], 0]]
-p_occ = []
-ntype = []
+p_occ = [[0, 0]]
+ntype = [[[0, 0], 0]]
 b_ar = []
-tools = [tourch, neiter, climbing, tourch]
+tools = [tourch, neiter, climbing]
 
 for tool in tools:
 	while p_ar:
 		p, s = p_ar.pop()
-		# p_occ.append(p)
-		print(' --> ', p)
-		if p == [10, 10]:
-			print(p, s)
 		for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
 			x, y = p
 			x, y = x + dx, y + dy
-			# if [x, y] in p_occ:
-			# 	# print(np.array(p_ar).unravel_index(p_ar.argmax(), p_ar.shape))
-			# 	print([[i, j] for i, j in p_ar if i == [x, y]])
-			# 	print(' --- >', [x, y], p_ar)
-			# print(len(p_occ))
-			if [x, y] in [[4, 2], [4, 3], [4, 4], [4, 5], [4, 6], [4, 7], [4, 8]]:
-				print([[x, y], s + 1])
-			
-			print([[q, t, s + 1 if tool[y][x] else s + 8, s + 1 if tool[y][x] else s + 8 < t] for q, t in ntype if q == [x, y]])
-			
-			if 0 <= x < size_x and 0 <= y < size_y and [x, y] not in p_occ:
+			if 0 <= x < size_x and 0 <= y < size_y:
+				sc = [sx for v, sx in ntype if v == [x, y]]
+				sc = sc[0] if sc else 999
 				if tool[y][x]:
-					# ex = [[i, j] for i, j in p_ar if i == [x, y]]
-					# p_ar.append([[x, y], s + 1 if len(ex) == 0 else (s + 1 if s + 1 < ex[0][1] else ex[0][1])])
-					p_ar.append([[x, y], s + 1])
-					ntype.append([[x, y], s + 1])
+					if s + 1 < sc:
+						p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
+						ntype = [[v, s] for v, s in ntype if v != [x, y]]
+						p_ar.append([[x, y], s + 1])
+						ntype.append([[x, y], s + 1])
 				else:
-					# ex = [[q, t] for q, t in b_ar if q == [x, y]]
-					# b_ar.append([[x, y], s + 1 if len(ex) == 0 else (s + 1 if s + 8 < ex[0][1] else ex[0][1])])
-					b_ar.append([[x, y], s + 8])
-					ntype.append([[x, y], s + 8])
-					# if len(ex) > 0:
-					# 	print(ex)
-					# 	_, sn = ex[0]
-					# 	if s + 1 < sn:
-					# 		b_ar.append([[x, y], s + 8])
-					# 		# p_ar.append([[x, y], s + 1])
+					if s + 8 < sc:
+						p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
+						ntype = [[v, s] for v, s in ntype if v != [x, y]]
+						b_ar.append([[x, y], s + 8])
+						ntype.append([[x, y], s + 8])
+
 				p_occ.append([x, y])
-	
+
+	# if tool == climbing or True:
+	# 	for a in range(size_y - 1):
+	# 		for b in range(size_x - 1):
+	# 			if [b, a] in [v for v, _ in ntype]:
+	# 				score = [s for v, s in ntype if v == [b, a]]
+	# 				# print([b, a], score)
+	# 				if [b, a] in [[10, 10]]:
+	# 					score = [s for v, s in ntype if v == [b, a]]
+	# 					# print([b, a], score)
+	# 					print(f"_{score[0]:2d}", end=' ')
+	# 				else:
+	# 					print(f"{score[0]:03d}", end=' ')
+	# 			else:
+	# 				print(f"{0:03d}", end=' ')
+	# 		print()
+	# 	print()
+
 	p_ar = b_ar.copy()
-	# print(list(map(lambda x: x[0], b_ar)))
-	print(b_ar)
 	b_ar.clear()
+	score_v = [s for v, s in ntype if v == [10, 10]]
+	if score_v:
+		print(score_v[0])
+
+
 
 
 exit()
