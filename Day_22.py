@@ -77,6 +77,53 @@ def print_type(types):
 		print()
 	print()
 
+
+def set_static(tools):
+	global static_tools, ntype
+	static_tools = tools.copy()
+	p_ar = [[[0, 0], 0]]
+	ntype = [[[0, 0], 0]]
+	iterate([tourch], p_ar)
+
+
+def iterate(tools, p_ar):
+	b_ar = []
+	for tool in tools:
+		while p_ar:
+			p, s = p_ar.pop()
+			for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
+				x, y = p
+				x, y = x + dx, y + dy
+				if 0 <= x < size_x and 0 <= y < size_y:
+					sc = [sx for v, sx in ntype if v == [x, y]]
+					sc = sc[0] if sc else 999
+					if tool[y][x]:
+						if s + 1 < sc:
+							p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
+							ntype = [[v, s] for v, s in ntype if v != [x, y]]
+							p_ar.append([[x, y], s + 1])
+							ntype.append([[x, y], s + 1])
+					else:
+						if s + 8 < sc:
+							p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
+							ntype = [[v, s] for v, s in ntype if v != [x, y]]
+							b_ar.append([[x, y], s + 8])
+							ntype.append([[x, y], s + 8])
+
+					p_occ.append([x, y])
+
+		p_ar = b_ar.copy()
+		b_ar.clear()
+		score_v = [s for v, s in ntype if v == [10, 10]]
+		if score_v:
+			print(score_v[0])
+			break;
+		else:
+			new_tools = static_tools.copy()
+			new_tools.remove(tool)
+			iterate(new_tools, p_ar.copy())
+
+
 initialization()
 size_x, size_y = size
 target_x, target_y = target
