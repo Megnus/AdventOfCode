@@ -1,14 +1,17 @@
 import numpy as np
-
+# 799 >
+# 1147 <
+# 1101 <
 
 def initialization():
 	global depth, target, size
+	target = [14, 400]
+	target = [14, 785]
 	target = [10, 10]
-	target = (14, 785)
 	x, y = target
-	size = x + 5, y + 20
-	depth = 510
+	size = x + 10, y + 25
 	depth = 4080
+	depth = 510
 
 
 def erosion_level(geologic_index):
@@ -80,19 +83,19 @@ def print_type(types):
 
 
 def set_static(tools):
-	global counter
-	counter = 0
-
-	global static_tools
+	global static_tools, max_score
 	static_tools = tools.copy()
+	max_score = 1101
 	p_ar = [[[0, 0], 0]]
 	ntype = [[[0, 0], 0]]
-	iterate([tourch], p_ar, ntype, 14)
+	iterate([tourch], p_ar, ntype, 40)
 
 
 def iterate(tools, p_ar, ntype, iter):
+	global static_tools, max_score
 	b_ar = []
 	for tool in tools:
+		print(40 - iter, ':', static_tools.index(tool), end=', ')
 		# print('iter: ', 20 - iter)
 		while p_ar:
 			p, s = p_ar.pop(0)
@@ -101,7 +104,8 @@ def iterate(tools, p_ar, ntype, iter):
 				x, y = x + dx, y + dy
 				if 0 <= x < size_x and 0 <= y < size_y:
 					sc = [sx for v, sx in ntype if v == [x, y]]
-					sc = sc[0] if sc else 999
+					# sc = sc[0] if sc else max_score
+					sc = max_score if not sc or sc[0] > max_score else sc[0]
 					if tool[y][x]:
 						if s + 1 < sc:
 							p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
@@ -115,22 +119,29 @@ def iterate(tools, p_ar, ntype, iter):
 							b_ar.append([[x, y], s + 8])
 							ntype.append([[x, y], s + 8])
 
-					p_occ.append([x, y])
+					# p_occ.append([x, y])
 
 		p_ar = b_ar.copy()
 		b_ar.clear()
 		score_v = [s for v, s in ntype if v == target]
 		if score_v:
-			print('=', static_tools.index(tool))
-			print(':', score_v[0])
-			return
+			max_score = max_score if max_score < score_v[0] else score_v[0]
+			print('')
+			print('T-score: ', score_v[0], ', Max score: ', max_score)
+			print('')
+			new_tools = static_tools.copy()
+			new_tools.remove(tool)
+			if iter > 0 and p_ar:
+				iterate(new_tools, p_ar.copy(), ntype, iter - 1)
+			else:
+				print('No-score', end=" - ")
 		else:
 			new_tools = static_tools.copy()
 			new_tools.remove(tool)
-			if iter > 0:
+			if iter > 0 and p_ar:
 				iterate(new_tools, p_ar.copy(), ntype, iter - 1)
-			return
-
+			else:
+				print('No-score', end=" - ")
 
 
 initialization()
