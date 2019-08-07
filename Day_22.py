@@ -83,14 +83,58 @@ def print_type(types):
 
 
 def set_static(tools):
+	global steps, rows, cols
 	global static_tools, max_score
 	static_tools = tools.copy()
 	max_score = 1101
 	p_ar = [[[0, 0], 0]]
 	ntype = [[[0, 0], 0]]
-	iterate([tourch], p_ar, ntype, 40)
+	# iterate([tourch], p_ar, ntype, 40)
+	max_score = 1101
+	steps = [[max_score for _ in f] for f in tourch]
+	steps[0][0] = 0
+	rows, cols = len(steps), len(steps[0])
+	print(searching([tourch, climbing], [[0, 0]]))
+	# print(searching(tourch, [[0, 0]]))
+	# print(searching(climbing, [[0, 0]]))
 
 
+def searching(fields, initial_positions):
+	for field in fields:
+		positions = initial_positions.copy()
+		#positions = borders.copy()
+		borders = []
+		for x, y in positions:
+			for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
+				p = a, b = [x + dx, y + dy]
+				
+				if not rows > b >= 0 or not cols > a >= 0:
+					continue
+				
+				# if p not in positions and p not in borders:
+				# if p is score_valid
+				
+				if field[b][a]:
+					score = steps[y][x] + 1
+					if score < steps[b][a]:
+						steps[b][a] = score
+						positions.append(p)
+				else:
+					score = steps[y][x] + 8
+					if score < steps[b][a]:
+						steps[b][a] = score
+						borders.append(p)
+
+						
+					# if score < steps[b][a]:
+					# 	steps[b][a] = score
+					
+					# if p in borders and p in positions:
+					# 	borders.remove(p)
+		print(borders, steps)
+	return borders, steps
+
+	
 def iterate(tools, p_ar, ntype, iter):
 	global static_tools, max_score
 	b_ar = []
