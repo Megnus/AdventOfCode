@@ -2,16 +2,21 @@ import numpy as np
 # 799 >
 # 1147 <
 # 1101 <
+# 1078?
+# 1092 Seng
+
 
 def initialization():
 	global depth, target, size
 	target = [14, 400]
-	target = [14, 785]
 	target = [10, 10]
+	target = [14, 796]
+	target = [14, 785]
 	x, y = target
-	size = x + 10, y + 25
-	depth = 4080
+	size = x + 25, y + 25
 	depth = 510
+	depth = 5355
+	depth = 4080
 
 
 def erosion_level(geologic_index):
@@ -22,8 +27,10 @@ def geological_index(v, erosions):
 	x, y = v
 
 	if v == (0, 0):
+		print(v)
 		return 0
-	if v == target:
+	if v == (target_x, target_y):
+		print(v)
 		return 0
 	if y == 0:
 		return x * 16807
@@ -72,8 +79,8 @@ def print_val():
 
 def print_type(types):
 	t = ['.', '=', '|']
-	for x in range(size_x):
-		for y in range(size_y):
+	for y in range(size_y):
+		for x in range(size_x):
 			if [x, y] == target:
 				print('T', end=' ')
 			else:
@@ -83,124 +90,88 @@ def print_type(types):
 
 
 def set_static(tools):
-	global steps, rows, cols
+	global steps, target_x, target_y, rows, cols
 	global static_tools, max_score
 	static_tools = tools.copy()
-	max_score = 1101
+	max_score = 999999 #1101
 	p_ar = [[[0, 0], 0]]
 	ntype = [[[0, 0], 0]]
 	# iterate([tourch], p_ar, ntype, 40)
-	max_score = 1101
+	max_score = 99999999 #1101 #1101
+	# steps = [[max_score for _ in f] for f in tourch]
+	# steps[0][0] = 0
+	# rows, cols = len(steps), len(steps[0])
+	# print(searching([tourch, climbing], [[0, 0]]))
 	steps = [[max_score for _ in f] for f in tourch]
+	# equipments = [[[] for _ in f] for f in tourch]
 	steps[0][0] = 0
+	target_x, target_y = target
 	rows, cols = len(steps), len(steps[0])
-	print(searching([tourch, climbing], [[0, 0]]))
+	print(searching([tourch, climbing, neiter], [[0, 0]]))
 	# print(searching(tourch, [[0, 0]]))
 	# print(searching(climbing, [[0, 0]]))
 
 
-def searching(fields, initial_positions):
-	for field in fields:
-		positions = initial_positions.copy()
-		#positions = borders.copy()
-		borders = []
-		for x, y in positions:
-			for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
-				p = a, b = [x + dx, y + dy]
-				
-				if not rows > b >= 0 or not cols > a >= 0:
-					continue
-				
-				# if p not in positions and p not in borders:
-				# if p is score_valid
-				
-				if field[b][a]:
-					score = steps[y][x] + 1
-					if score < steps[b][a]:
-						steps[b][a] = score
-						positions.append(p)
-				else:
-					score = steps[y][x] + 8
-					if score < steps[b][a]:
-						steps[b][a] = score
-						borders.append(p)
-
-						
-					# if score < steps[b][a]:
-					# 	steps[b][a] = score
-					
-					# if p in borders and p in positions:
-					# 	borders.remove(p)
-		print(borders, steps)
-	return borders, steps
-
+def searching(initial_fields, initial_positions):
+	global max_score
+	#max_score = 1101
+	borders = []
 	
-def iterate(tools, p_ar, ntype, iter):
-	global static_tools, max_score
-	b_ar = []
-	for tool in tools:
-		print(40 - iter, ':', static_tools.index(tool), end=', ')
-		# print('iter: ', 20 - iter)
-		while p_ar:
-			p, s = p_ar.pop(0)
-			for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
-				x, y = p
-				x, y = x + dx, y + dy
-				if 0 <= x < size_x and 0 <= y < size_y:
-					sc = [sx for v, sx in ntype if v == [x, y]]
-					# sc = sc[0] if sc else max_score
-					sc = max_score if not sc or sc[0] > max_score else sc[0]
-					if tool[y][x]:
-						if s + 1 < sc:
-							p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
-							ntype = [[v, s] for v, s in ntype if v != [x, y]]
-							p_ar.append([[x, y], s + 1])
-							ntype.append([[x, y], s + 1])
+	while initial_positions:#steps[target_y][target_x] == max_score:
+		if steps[target_y][target_x] < max_score:
+			max_score = steps[target_y][target_x]
+			print(max_score)
+		for field in [tourch, climbing, neiter]:
+			#positions = borders.copy()
+			positions = initial_positions.copy()
+			for x, y in positions:
+				# if [x, y] in borders:
+				# 	borders.remove([x, y])
+				if not field[y][x]:
+					continue
+				for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
+					p = a, b = [x + dx, y + dy]
+					if not rows > b >= 0 or not cols > a >= 0:
+						continue
+					
+					if field[b][a]:
+						
+						score = steps[y][x] + 1
+						if score <= steps[b][a]:
+							steps[b][a] = score
+							if p in positions:
+								positions.remove(p)
+							positions.append(p)
+							# if p in borders:
+							# 	borders.remove(p)
+					# if p in initial_positions:
+					# 	initial_positions.remove(p)
 					else:
-						if s + 8 < sc:
-							p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
-							ntype = [[v, s] for v, s in ntype if v != [x, y]]
-							b_ar.append([[x, y], s + 8])
-							ntype.append([[x, y], s + 8])
-
-					# p_occ.append([x, y])
-
-		p_ar = b_ar.copy()
-		b_ar.clear()
-		score_v = [s for v, s in ntype if v == target]
-		if score_v:
-			max_score = max_score if max_score < score_v[0] else score_v[0]
-			print('')
-			print('T-score: ', score_v[0], ', Max score: ', max_score)
-			print('')
-			new_tools = static_tools.copy()
-			new_tools.remove(tool)
-			if iter > 0 and p_ar:
-				iterate(new_tools, p_ar.copy(), ntype, iter - 1)
-			else:
-				print('No-score', end=" - ")
-		else:
-			new_tools = static_tools.copy()
-			new_tools.remove(tool)
-			if iter > 0 and p_ar:
-				iterate(new_tools, p_ar.copy(), ntype, iter - 1)
-			else:
-				print('No-score', end=" - ")
+						score = steps[y][x] + 8
+						if score <= steps[b][a]:
+							steps[b][a] = score
+							# equipments[b][a] = field
+							if p not in borders:
+								borders.append(p)
+		initial_positions = borders.copy()
+	
+	return steps[target_y][target_x]
 
 
 initialization()
 size_x, size_y = size
 global target_x, target_y
 target_x, target_y = target
-max_x, max_y = target_x + 1, target_y + 1
+max_x, max_y = size_x + 1, size_y + 1
 erosions = [[0 for x in range(size_x)] for y in range(size_y)]
 
 for x in range(size_x):
 	for y in range(size_y):
 		erosions[y][x] = erosion_level(geological_index((x, y), erosions))
-
-types = [[erosions[y][x] % 3 for x in range(max_x)] for y in range(max_y)]
-result_1 = sum([sum(x) for x in types]) - types[target_y][target_x]
+		
+types = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
+calc = [[erosions[y][x] % 3 for x in range(target_x + 1)] for y in range(target_y + 1)]
+result_1 = sum([sum(x) for x in calc])
 print("Result part 1: ", result_1)
 
 # walk = [0, tools[y][x]]
@@ -208,14 +179,16 @@ print("Result part 1: ", result_1)
 # set2 = {3, 2}
 # tup1 = set1.intersection(set2)
 
-area = [[erosions[y][x] % 3 for y in range(size_y)] for x in range(size_x)]
+#area = [[erosions[y][x] % 3 for y in range(size_y)] for x in range(size_x)]
+area = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
+print_type(area)
 # print_type(area)
 
 # area = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
 # sys.maxsize
-tools = [[set(requierd_tool(area[y][x])) for y in range(size_x)] for x in range(size_y)]
+tools = [[set(requierd_tool(area[y][x])) for y in range(size_y)] for x in range(size_x)]
 
-steps_new = [[0 for y in range(size_x)] for x in range(size_y)]
+steps_new = [[0 for y in range(size_y)] for x in range(size_x)]
 
 t = ['.', '=', '|']
 # for x in range(size_y):
@@ -243,19 +216,19 @@ steps_new[0][0] = [0, {0}]
 # climbing : . =
 # neiter   : = |
 
-tourch = [[area[y][x] == 0 or area[y][x] == 2 for y in range(size_x)] for x in range(size_y)]
-climbing = [[[x, y] != target and (area[y][x] == 0 or area[y][x] == 1) for y in range(size_x)] for x in range(size_y)]
-neiter = [[[x, y] != target and (area[y][x] == 1 or area[y][x] == 2) for y in range(size_x)] for x in range(size_y)]
-border = [[False for y in range(size_x)] for x in range(size_y)]
-new_border = [[False for y in range(size_x)] for x in range(size_y)]
-fields = [[False for y in range(size_x)] for x in range(size_y)]
+tourch = [[[x, y] == [0, 0] or [x, y] == target or area[y][x] == 0 or area[y][x] == 2 for x in range(size_x)] for y in range(size_y)]
+climbing = [[[x, y] != [0, 0] and [x, y] != target and (area[y][x] == 0 or area[y][x] == 1) for x in range(size_x)] for y in range(size_y)]
+neiter = [[[x, y] != [0, 0] and [x, y] != target and (area[y][x] == 1 or area[y][x] == 2) for x in range(size_x)] for y in range(size_y)]
+border = [[False for x in range(size_x)] for y in range(size_y)]
+new_border = [[False for x in range(size_x)] for y in range(size_y)]
+fields = [[False for x in range(size_x)] for y in range(size_y)]
 
 print(tourch)
 print(size_x, size_y)
 print('\nall')
 
-for x in range(size_y):
-	for y in range(size_x):
+for y in range(size_y):
+	for x in range(size_x):
 		if [x, y] == target:
 			print(area[y][x], end='_')
 		else:
@@ -317,55 +290,5 @@ p_occ = [[0, 0]]
 ntype = [[[0, 0], 0]]
 b_ar = []
 tools = [tourch, neiter, climbing]
-tools = []
-for tool in tools:
-	print('tool')
-	while p_ar:
-		# print(len(ntype))
-		p, s = p_ar.pop(0)
-		for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
-			x, y = p
-			x, y = x + dx, y + dy
-			if 0 <= x < size_x and 0 <= y < size_y:
-				sc = [sx for v, sx in ntype if v == [x, y]]
-				sc = sc[0] if sc else 999
-				if tool[y][x]:
-					if s + 1 < sc:
-						p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
-						ntype = [[v, s] for v, s in ntype if v != [x, y]]
-						p_ar.append([[x, y], s + 1])
-						ntype.append([[x, y], s + 1])
-				else:
-					if s + 8 < sc:
-						p_ar = [[v, s] for v, s in p_ar if v != [x, y]]
-						ntype = [[v, s] for v, s in ntype if v != [x, y]]
-						b_ar.append([[x, y], s + 8])
-						ntype.append([[x, y], s + 8])
 
-				p_occ.append([x, y])
-
-	# if tool == climbing or True:
-	# 	for a in range(size_y - 1):
-	# 		for b in range(size_x - 1):
-	# 			if [b, a] in [v for v, _ in ntype]:
-	# 				score = [s for v, s in ntype if v == [b, a]]
-	# 				# print([b, a], score)
-	# 				if [b, a] in [[10, 10]]:
-	# 					score = [s for v, s in ntype if v == [b, a]]
-	# 					# print([b, a], score)
-	# 					print(f"_{score[0]:2d}", end=' ')
-	# 				else:
-	# 					print(f"{score[0]:03d}", end=' ')
-	# 			else:
-	# 				print(f"{0:03d}", end=' ')
-	# 		print()
-	# 	print()
-
-	p_ar = b_ar.copy()
-	b_ar.clear()
-	score_v = [s for v, s in ntype if v == target]
-	if score_v:
-		print(score_v[0])
-
-tools = [tourch, neiter, climbing]
 set_static(tools)
