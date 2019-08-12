@@ -96,15 +96,17 @@ def print_type(types):
 
 def initialization():
 	global depth, target, size
-	target = [14, 400]
 	target = [14, 796]
-	target = [14, 22]
 	target = [14, 785]
+	target = [14, 22]
+	target = [10, 10]
 	x, y = target
-	size = x + 15, y + 15
+	size = x + 10, y + 10
 	depth = 5355
-	depth = 510
+
 	depth = 4080
+	depth = 510
+
 	
 	
 def set_static(tools):
@@ -124,12 +126,61 @@ def set_static(tools):
 	steps[0][0] = 0
 	target_x, target_y = target
 	rows, cols = len(steps), len(steps[0])
-	print(searching([tourch, climbing, neiter], [[0, 0]]))
+	scoresheet = [[max_score for _ in f] for f in tourch]
+	scoresheet[0][0] = 0
+	searching(tourch, [[0, 0]], scoresheet, 0)
 	# print(searching(tourch, [[0, 0]]))
 	# print(searching(climbing, [[0, 0]]))
 
 
-def searching(initial_fields, initial_positions):
+def searching(field, positions, scoresheet, d):
+	global max_score
+	# max_score = 1101
+	borders = []
+
+	if scoresheet[target_y][target_x] < max_score:
+		max_score = scoresheet[target_y][target_x]
+		print(max_score, d)
+		return
+
+	for x, y in positions:
+		# x, y = positions.pop(0)
+
+		if not field[y][x]:
+			continue
+
+		for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
+			p = a, b = [x + dx, y + dy]
+
+			if not rows > b >= 0 or not cols > a >= 0:
+				continue
+
+			if scoresheet[target_y][target_x] < max_score:
+				max_score = scoresheet[target_y][target_x]
+				print(max_score)
+				return
+
+			if field[b][a] and scoresheet[b][a] > scoresheet[y][x] + 1:
+				scoresheet[b][a] = scoresheet[y][x] + 1
+				positions.append(p)
+			elif scoresheet[b][a] > scoresheet[y][x] + 8:
+				scoresheet[b][a] = scoresheet[y][x] + 8
+				borders.append(p)
+
+				for field in [tourch, neiter, climbing]:
+					#print(p)
+					searching(field, [p], scoresheet.copy(), d + 1)
+					print('-', scoresheet[target_y][target_x], d)
+
+
+
+
+	# for field in [tourch, neiter, climbing]:
+	# 	if borders:
+	# 		searching(field, borders.copy(), scoresheet.copy(), d + 1)
+
+
+def searching_(initial_fields, initial_positions):
 	global max_score
 	#max_score = 1101
 	borders = []
@@ -144,15 +195,9 @@ def searching(initial_fields, initial_positions):
 			print(max_score)
 			
 		for field in [tourch, neiter, climbing]:
-			#positions = borders.copy()
 			positions = initial_positions.copy()
-			koord = []
-			#for x, y in positions:
 			while positions:
 				x, y = positions.pop(0)
-				# if [x, y] in borders:
-				# 	borders.remove([x, y])
-				# print(len(initial_positions))
 				if not field[y][x]:
 					continue
 				for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
