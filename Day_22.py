@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 # 799 >
 # 1147 <
@@ -68,13 +69,13 @@ def print_val():
 	print()
 	
 
-def print_val_b(b):
+def print_val_b(scoresheet, vec):
 	for y in range(size_y):
 		for x in range(size_x):
-			score = steps[y][x]
+			score = scoresheet[y][x]
 			if [x, y] == [target_x, target_y]:
 				print(f"{score:03d}", end='^')
-			elif [x, y] in b:
+			elif [x, y] in vec:
 				print(f"{score:03d}", end='_')
 			else:
 				print(f"{score:03d}", end=' ')
@@ -94,58 +95,72 @@ def print_type(types):
 	print()
 
 
-def initialization():
+def initialization_(n):
 	global depth, target, size
-	target = [14, 796]
-	target = [14, 785]
-	target = [14, 22]
-	target = [10, 10]
+	target_1 = [10, 10]
+	target_2 = [6, 22]
+	target_3 = [14, 785]
+	target_4 = [14, 796]
+	depth_4 = 5355
+	depth_3 = 4080
+	depth_2 = 4080
+	depth_1 = 510
+	target_ar = [target_1, target_2, target_3, target_4]
+	depth_ar = [depth_1, depth_2, depth_3, depth_4]
+	target = target_ar[n]
+	depth = depth_ar[n]
 	x, y = target
-	size = x + 10, y + 10
-	depth = 5355
+	size = x + 2, y + 2
 
-	depth = 4080
-	depth = 510
 
+def initialization():
+	initialization_(1)
 	
-	
+
 def set_static(tools):
 	global steps, target_x, target_y, rows, cols
 	global static_tools, max_score
 	static_tools = tools.copy()
-	p_ar = [[[0, 0], 0]]
-	ntype = [[[0, 0], 0]]
-	# iterate([tourch], p_ar, ntype, 40)
-	max_score = 99999 #1101
-	# steps = [[max_score for _ in f] for f in tourch]
-	# steps[0][0] = 0
-	# rows, cols = len(steps), len(steps[0])
-	# print(searching([tourch, climbing], [[0, 0]]))
+
+	max_score = 99 #1101
 	steps = [[max_score for _ in f] for f in tourch]
-	# equipments = [[[] for _ in f] for f in tourch]
 	steps[0][0] = 0
 	target_x, target_y = target
 	rows, cols = len(steps), len(steps[0])
 	scoresheet = [[max_score for _ in f] for f in tourch]
 	scoresheet[0][0] = 0
-	searching(tourch, [[0, 0]], scoresheet, 0)
+	searching(tourch, [[0, 0]], copy.deepcopy(scoresheet), 0)
 	# print(searching(tourch, [[0, 0]]))
 	# print(searching(climbing, [[0, 0]]))
+	#testing(scoresheet.copy(), 1)
+	#tester = [[tourch[y][x] and neiter[y][x] for x in range(size_x)] for y in range(size_y)]
+	print('\ntester')
+	for y in range(size_y):
+		for x in range(size_x):
+			if [x, y] == target:
+				print('T', end=' ')
+			else:
+				print('.' if climbing[y][x] else 'x', end='')
+				print('.' if neiter[y][x] else 'x', end=' ')
+		print()
+	print()
 
+
+def testing(scoresheet, d):
+	if d > 5:
+		return
+	print('before', d)
+	print_val_b(scoresheet.copy(), [])
+	scoresheet[0][0] = d
+	testing(copy.deepcopy(scoresheet), d + 1)
+	print('after: ', d)
+	print_val_b(scoresheet, [])
 
 def searching(field, positions, scoresheet, d):
 	global max_score
-	# max_score = 1101
 	borders = []
 
-	if scoresheet[target_y][target_x] < max_score:
-		max_score = scoresheet[target_y][target_x]
-		print(max_score, d)
-		return
-
 	for x, y in positions:
-		# x, y = positions.pop(0)
-
 		if not field[y][x]:
 			continue
 
@@ -155,25 +170,38 @@ def searching(field, positions, scoresheet, d):
 			if not rows > b >= 0 or not cols > a >= 0:
 				continue
 
-			if scoresheet[target_y][target_x] < max_score:
-				max_score = scoresheet[target_y][target_x]
-				print(max_score)
-				return
-
 			if field[b][a] and scoresheet[b][a] > scoresheet[y][x] + 1:
 				scoresheet[b][a] = scoresheet[y][x] + 1
 				positions.append(p)
 			elif scoresheet[b][a] > scoresheet[y][x] + 8:
 				scoresheet[b][a] = scoresheet[y][x] + 8
 				borders.append(p)
+	
+	if tourch == field:
+		print('tourch', ' depth: ', d, end='')
+	if climbing == field:
+		print('climbing' ' depth: ', d, end='')
+	if neiter == field:
+		print('neiter', ' depth: ', d, end='')
+	
+	if scoresheet[target_y][target_x] < max_score:
+		max_score = scoresheet[target_y][target_x]
+		
+		print(' NEW score: ', max_score)
+		#return
+	
+	print('  score: ', max_score)
+	
+	#print_val_b(copy.deepcopy(scoresheet), borders)
+	#input()
+	
+	if not borders:
+		return
 
-				for field in [tourch, neiter, climbing]:
-					#print(p)
-					searching(field, [p], scoresheet.copy(), d + 1)
-					print('-', scoresheet[target_y][target_x], d)
-
-
-
+	for field in [tourch, climbing, neiter]:
+		searching(field, copy.deepcopy(borders), copy.deepcopy(scoresheet), d + 1)
+	
+	#print_val_b(copy.deepcopy(scoresheet), borders)
 
 	# for field in [tourch, neiter, climbing]:
 	# 	if borders:
@@ -184,50 +212,6 @@ def searching_(initial_fields, initial_positions):
 	global max_score
 	#max_score = 1101
 	borders = []
-
-	while initial_positions:#steps[target_y][target_x] == max_score:
-		# if steps[target_y][target_x] < max_score:
-		# 	max_score = steps[target_y][target_x]
-		# 	print(max_score)
-		
-		if steps[target_y][target_x] < max_score:
-			max_score = steps[target_y][target_x]
-			print(max_score)
-			
-		for field in [tourch, neiter, climbing]:
-			positions = initial_positions.copy()
-			while positions:
-				x, y = positions.pop(0)
-				if not field[y][x]:
-					continue
-				for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
-					p = a, b = [x + dx, y + dy]
-					if not rows > b >= 0 or not cols > a >= 0:
-						continue
-					
-					if field[b][a]:
-						score = steps[y][x] + 1
-						
-						if score <= steps[b][a]:
-							steps[b][a] = score
-
-							# if p in borders and score < steps[b][a]:
-							# 	borders.remove(p)
-							
-							if (p not in positions and p not in initial_positions) or score < steps[b][a]:
-								positions.append(p)
-								
-					else:
-						score = steps[y][x] + 8
-						if score <= steps[b][a] and p not in initial_positions:
-							steps[b][a] = score
-							if p not in borders:
-								borders.append(p)
-		initial_positions = borders.copy()
-		borders = []
-		# print(initial_positions)
-		# print_val_b(initial_positions)
-	return steps[target_y][target_x]
 
 
 initialization()
