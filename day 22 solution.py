@@ -47,7 +47,7 @@ def dijkstra(grid, corner, target):
                     new_items = valid_items[grid[(new_x, new_y)]]
                     for item in set(items).intersection(set(new_items)):
                         graph.add_edge((x, y, item), (new_x, new_y, item), weight=1)
-
+    print(nx.dijkstra_path(graph, (0, 0, torch), (target[0], target[1], torch)))
     return nx.dijkstra_path_length(graph, (0, 0, torch), (target[0], target[1], torch))
 
 
