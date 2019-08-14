@@ -1,4 +1,6 @@
 import copy
+import sys
+
 import numpy as np
 # 799 >
 # 1147 <
@@ -73,8 +75,9 @@ def print_val_b(scoresheet, vec):
 	for y in range(size_y):
 		for x in range(size_x):
 			score = scoresheet[y][x]
+			score = score if score < 999 else 000
 			if [x, y] == [target_x, target_y]:
-				print(f"{score:03d}", end='^')
+				print(f"{score:03d}", end='*')
 			elif [x, y] in vec:
 				print(f"{score:03d}", end='_')
 			else:
@@ -99,7 +102,8 @@ def initialization_(n):
 	global depth, target, size
 	target_1 = [10, 10]
 	target_2 = [6, 22]
-	target_3 = [14, 785]
+	#target_3 = [14, 785]
+	target_3 = [7, 60]
 	target_4 = [14, 796]
 	depth_4 = 5355
 	depth_3 = 4080
@@ -110,11 +114,11 @@ def initialization_(n):
 	target = target_ar[n]
 	depth = depth_ar[n]
 	x, y = target
-	size = x + 2, y + 2
+	size = x + 5, y + 5
 
 
 def initialization():
-	initialization_(1)
+	initialization_(2)
 	
 
 def set_static(tools):
@@ -122,7 +126,7 @@ def set_static(tools):
 	global static_tools, max_score
 	static_tools = tools.copy()
 
-	max_score = 99 #1101
+	max_score = 99999 #1101
 	steps = [[max_score for _ in f] for f in tourch]
 	steps[0][0] = 0
 	target_x, target_y = target
@@ -134,20 +138,20 @@ def set_static(tools):
 	# print(searching(climbing, [[0, 0]]))
 	#testing(scoresheet.copy(), 1)
 	#tester = [[tourch[y][x] and neiter[y][x] for x in range(size_x)] for y in range(size_y)]
-	print('\ntester')
-	for y in range(size_y):
-		for x in range(size_x):
-			if [x, y] == target:
-				print('T', end=' ')
-			else:
-				print('.' if climbing[y][x] else 'x', end='')
-				print('.' if neiter[y][x] else 'x', end=' ')
-		print()
-	print()
+	# print('\ntester')
+	# for y in range(size_y):
+	# 	for x in range(size_x):
+	# 		if [x, y] == target:
+	# 			print('T', end=' ')
+	# 		else:
+	# 			print('.' if climbing[y][x] else 'x', end='')
+	# 			print('.' if neiter[y][x] else 'x', end=' ')
+	# 	print()
+	# print()
 
 
 def testing(scoresheet, d):
-	if d > 5:
+	if d > 8:
 		return
 	print('before', d)
 	print_val_b(scoresheet.copy(), [])
@@ -156,12 +160,20 @@ def testing(scoresheet, d):
 	print('after: ', d)
 	print_val_b(scoresheet, [])
 
+
 def searching(field, positions, scoresheet, d):
 	global max_score
 	borders = []
+	init_border = copy.deepcopy(positions)
+	if d > 10:
+		#print('max_score % 8')
+		return
 
 	for x, y in positions:
-		if not field[y][x]:
+		# if d > (max_score - (abs(x - target_x) + abs(y - target_y))) / 8:
+		# 	continue
+		
+		if not field[y][x] or scoresheet[y][x] + abs(x - target_x) + abs(y - target_y) > max_score:
 			continue
 
 		for dx, dy in (1, 0), (-1, 0), (0, 1), (0, -1):
@@ -169,35 +181,40 @@ def searching(field, positions, scoresheet, d):
 
 			if not rows > b >= 0 or not cols > a >= 0:
 				continue
-
+			
+			# x - target_x + y - target_y
 			if field[b][a] and scoresheet[b][a] > scoresheet[y][x] + 1:
 				scoresheet[b][a] = scoresheet[y][x] + 1
 				positions.append(p)
-			elif scoresheet[b][a] > scoresheet[y][x] + 8:
+			elif scoresheet[b][a] >= scoresheet[y][x] + 8 and not field[b][a]:
 				scoresheet[b][a] = scoresheet[y][x] + 8
 				borders.append(p)
 	
 	if tourch == field:
-		print('tourch', ' depth: ', d, end='')
+		print('tourch', ' depth: ', d, end='\n')
 	if climbing == field:
-		print('climbing' ' depth: ', d, end='')
+		print('climbing' ' depth: ', d, end='\n')
 	if neiter == field:
-		print('neiter', ' depth: ', d, end='')
+		print('neiter', ' depth: ', d, end='\n')
 	
 	if scoresheet[target_y][target_x] < max_score:
 		max_score = scoresheet[target_y][target_x]
 		
-		print(' NEW score: ', max_score)
-		#return
+		print('MAX Score: ', max_score, 'depth: ', d)
+		
 	
 	print('  score: ', max_score)
 	
-	#print_val_b(copy.deepcopy(scoresheet), borders)
-	#input()
+	print_val_b(copy.deepcopy(scoresheet), borders)
+	print([field[y][x] for x, y in borders if field[y][x]])
+	input()
+	
+	for x, y in positions:
+		scoresheet[y][x] = max_score
 	
 	if not borders:
 		return
-
+	
 	for field in [tourch, climbing, neiter]:
 		searching(field, copy.deepcopy(borders), copy.deepcopy(scoresheet), d + 1)
 	
@@ -207,11 +224,28 @@ def searching(field, positions, scoresheet, d):
 	# 	if borders:
 	# 		searching(field, borders.copy(), scoresheet.copy(), d + 1)
 
+# https://www.reddit.com/r/adventofcode/comments/a8i1cy/2018_day_22_solutions/
 
-def searching_(initial_fields, initial_positions):
-	global max_score
-	#max_score = 1101
-	borders = []
+
+x1 = [[(0, 0, 0), 0, None], [(0, 0, 1), sys.maxsize, None], [(0, 0, 2), sys.maxsize, None]]
+y1 = [[(1, 0, 0), sys.maxsize, None], [(1, 0, 1), sys.maxsize, None], [(1, 0, 2), sys.maxsize, None]]
+z1 = [[(0, 1, 0), sys.maxsize, None], [(0, 1, 1), sys.maxsize, None], [(0, 1, 2), sys.maxsize, None]]
+
+c = 5
+nodes = []
+node = [(0, 0, 0), 0, None]
+for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2):
+	pos, _, _ = node
+	x, y, z = pos
+	pos = x + dx, y + dy, z + dz
+	node = [pos, c, None]
+	nodes.append(node)
+	nodes.sort(key=lambda x: x[1])
+	c -= 1
+
+print(nodes)
+exit()
+
 
 
 initialization()
@@ -349,3 +383,5 @@ b_ar = []
 tools = [tourch, neiter, climbing]
 
 set_static(tools)
+
+
