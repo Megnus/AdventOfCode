@@ -232,16 +232,27 @@ y1 = [[(1, 0, 0), sys.maxsize, None], [(1, 0, 1), sys.maxsize, None], [(1, 0, 2)
 z1 = [[(0, 1, 0), sys.maxsize, None], [(0, 1, 1), sys.maxsize, None], [(0, 1, 2), sys.maxsize, None]]
 
 c = 5
-nodes = []
 node = [(0, 0, 0), 0, None]
-for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2):
-	pos, _, _ = node
+nodes = [node]
+completed = []
+for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2), (0, 0, -1), (0, 0, -2):
+	pos, s, _ = node
 	x, y, z = pos
 	pos = x + dx, y + dy, z + dz
-	node = [pos, c, None]
-	nodes.append(node)
+	s += 7 if dz > 0 and 0 <= z <= 2 else 1
+	# check if node exists else new_node
+	new_node = [[p, s, c] for p, s, c in nodes if p == (x, y, z)]
+	if not new_node:
+		new_node = [pos, s, None]
+		nodes.append(new_node)
+	else:
+		i = nodes.index(new_node)
+		new_node = nodes[i]
+		
 	nodes.sort(key=lambda x: x[1])
-	c -= 1
+	
+completed.append(node)
+nodes.remove(node)
 
 print(nodes)
 exit()
