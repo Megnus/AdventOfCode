@@ -9,21 +9,36 @@ import numpy as np
 # 1092 Seng
 
 
+def check_node(x, y, z):
+	max_x, max_y = 25, 800
+	return 0 <= x <= max_x and 0 <= y <= max_y and z in requierd_tools(x, y)
 
+
+def requierd_tools(x, y):
+	type = erosion_type(x, y)
+	if type == 0:
+		return 0, 1
+	if type == 1:
+		return 1, 2
+	if type == 2:
+		return 0, 2
+
+
+def erosion_type(x, y):
+	return erosion_level(geological_index((x, y), erosions))
 
 
 def erosion_level(geologic_index):
+	depth = 4080
 	return (geologic_index + depth) % 20183
 
 
 def geological_index(v, erosions):
+	target_x, target_y = 14, 785
 	x, y = v
-
 	if v == (0, 0):
-		print(v)
 		return 0
 	if v == (target_x, target_y):
-		print(v)
 		return 0
 	if y == 0:
 		return x * 16807
@@ -32,6 +47,30 @@ def geological_index(v, erosions):
 	return erosions[y][x - 1] * erosions[y - 1][x]
 
 
+def geo_idx(x, y):
+	global erosion
+	try:
+		return erosion[y][x]
+		print("EROSIONS!!!!!!")
+	except NameError:
+		pass
+	target_x, target_y = 14, 785
+	erosion = [[0 for _ in range(25)] for _ in range(25)]
+	for y in range(25):
+		for x in range(25):
+			# erosions[y][x] = erosion_level(geological_index((x, y), erosions))
+			if (x, y) == (0, 0):
+				erosion[y][x] = 0
+			elif (x, y) == (target_x, target_y):
+				erosion[y][x] = 0
+			elif y == 0:
+				erosion[y][x] = x * 16807
+			elif x == 0:
+				erosion[y][x] = y * 48271
+			else:
+				erosion[y][x] = erosion[y][x - 1] * erosion[y - 1][x]
+			erosion[y][x] = erosion_level(erosion[y][x])
+	return erosion[y][x]
 # rocky (.), wet (=), narrow (|)
 # torch, climbing, neither
 
@@ -52,14 +91,6 @@ def time_calc(tool, type):
 		return tool, 0
 	return 7
 
-
-def requierd_tool(type):
-	if type == 0:
-		return 0, 1
-	if type == 1:
-		return 1, 2
-	if type == 2:
-		return 0, 2
 
 
 def print_val():
@@ -227,35 +258,39 @@ def searching(field, positions, scoresheet, d):
 # https://www.reddit.com/r/adventofcode/comments/a8i1cy/2018_day_22_solutions/
 
 
+print(geo_idx(5, 5))
+print(geo_idx(10, 10))
+
 x1 = [[(0, 0, 0), 0, None], [(0, 0, 1), sys.maxsize, None], [(0, 0, 2), sys.maxsize, None]]
 y1 = [[(1, 0, 0), sys.maxsize, None], [(1, 0, 1), sys.maxsize, None], [(1, 0, 2), sys.maxsize, None]]
 z1 = [[(0, 1, 0), sys.maxsize, None], [(0, 1, 1), sys.maxsize, None], [(0, 1, 2), sys.maxsize, None]]
 
-c = 5
 node = [(0, 0, 0), 0, None]
 nodes = [node]
 completed = []
+
 for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2), (0, 0, -1), (0, 0, -2):
 	pos, s, _ = node
 	x, y, z = pos
-	pos = x + dx, y + dy, z + dz
-	s += 7 if dz > 0 and 0 <= z <= 2 else 1
-	# check if node exists else new_node
-	new_node = [[p, s, c] for p, s, c in nodes if p == (x, y, z)]
+	x, y, z = pos = x + dx, y + dy, z + dz
+	if not check_node(x, y, z):
+		continue
+	s += 7 if dz > 0 else 1
+	new_node = [[p, s, c] for p, s, c in nodes if p == pos]
 	if not new_node:
-		new_node = [pos, s, None]
-		nodes.append(new_node)
+		nodes.append([pos, s, None])
 	else:
-		i = nodes.index(new_node)
+		i = nodes.index(new_node[0])
 		new_node = nodes[i]
-		
+
 	nodes.sort(key=lambda x: x[1])
-	
+	print(nodes)
+
 completed.append(node)
 nodes.remove(node)
 
-print(nodes)
-exit()
+
+
 
 
 
@@ -274,7 +309,7 @@ types = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
 calc = [[erosions[y][x] % 3 for x in range(target_x + 1)] for y in range(target_y + 1)]
 result_1 = sum([sum(x) for x in calc])
 print("Result part 1: ", result_1)
-
+exit()
 # walk = [0, tools[y][x]]
 # set1 = {0, 1}
 # set2 = {3, 2}
