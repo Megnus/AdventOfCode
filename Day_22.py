@@ -8,33 +8,38 @@ import numpy as np
 # 1078?
 # 1092 Seng
 
+eye_x = 14
+eye_y = 785
+upper_x = eye_x + 30
+upper_y = eye_y + 30
+depth = 4080
+
 
 def check_node(x, y, z):
-	max_x, max_y = 25, 800
-	return 0 <= x <= max_x and 0 <= y <= max_y and z in requierd_tools(x, y)
+	return 0 <= x <= upper_x and 0 <= y <= upper_y and z in requierd_tools(x, y)
 
 
 def requierd_tools(x, y):
-	type = erosion_type(x, y)
-	if type == 0:
-		return 0, 1
-	if type == 1:
-		return 1, 2
-	if type == 2:
-		return 0, 2
+	t = erosion_type(x, y)
+	if (x, y) == (eye_x, eye_y) or (x, y) == (0, 0):
+		return [0]
+	if t == 0:
+		return [0, 1]
+	if t == 1:
+		return [1, 2]
+	if t == 2:
+		return [0, 2]
 
 
 def erosion_type(x, y):
-	return erosion_level(geological_index((x, y), erosions))
+	return geo_idx(x, y) % 3
 
 
 def erosion_level(geologic_index):
-	depth = 4080
 	return (geologic_index + depth) % 20183
 
 
 def geological_index(v, erosions):
-	target_x, target_y = 14, 785
 	x, y = v
 	if v == (0, 0):
 		return 0
@@ -51,17 +56,17 @@ def geo_idx(x, y):
 	global erosion
 	try:
 		return erosion[y][x]
-		print("EROSIONS!!!!!!")
 	except NameError:
 		pass
-	target_x, target_y = 14, 785
-	erosion = [[0 for _ in range(25)] for _ in range(25)]
-	for y in range(25):
-		for x in range(25):
+	except:
+		print(x, y)
+	erosion = [[0 for _ in range(upper_x + 1)] for _ in range(upper_y + 1)]
+	for y in range(upper_y + 1):
+		for x in range(upper_x + 1):
 			# erosions[y][x] = erosion_level(geological_index((x, y), erosions))
 			if (x, y) == (0, 0):
 				erosion[y][x] = 0
-			elif (x, y) == (target_x, target_y):
+			elif (x, y) == (eye_x, eye_y):
 				erosion[y][x] = 0
 			elif y == 0:
 				erosion[y][x] = x * 16807
@@ -133,19 +138,19 @@ def initialization_(n):
 	global depth, target, size
 	target_1 = [10, 10]
 	target_2 = [6, 22]
-	#target_3 = [14, 785]
-	target_3 = [7, 60]
+	target_3 = [0, 3]
 	target_4 = [14, 796]
 	depth_4 = 5355
 	depth_3 = 4080
 	depth_2 = 4080
 	depth_1 = 510
+	
 	target_ar = [target_1, target_2, target_3, target_4]
 	depth_ar = [depth_1, depth_2, depth_3, depth_4]
 	target = target_ar[n]
 	depth = depth_ar[n]
 	x, y = target
-	size = x + 5, y + 5
+	size = x + 3, y + 3
 
 
 def initialization():
@@ -248,8 +253,9 @@ def searching(field, positions, scoresheet, d):
 	
 	for field in [tourch, climbing, neiter]:
 		searching(field, copy.deepcopy(borders), copy.deepcopy(scoresheet), d + 1)
+
 	
-	#print_val_b(copy.deepcopy(scoresheet), borders)
+	# print_val_b(copy.deepcopy(scoresheet), borders)
 
 	# for field in [tourch, neiter, climbing]:
 	# 	if borders:
@@ -258,42 +264,53 @@ def searching(field, positions, scoresheet, d):
 # https://www.reddit.com/r/adventofcode/comments/a8i1cy/2018_day_22_solutions/
 
 
-print(geo_idx(5, 5))
-print(geo_idx(10, 10))
-
-x1 = [[(0, 0, 0), 0, None], [(0, 0, 1), sys.maxsize, None], [(0, 0, 2), sys.maxsize, None]]
-y1 = [[(1, 0, 0), sys.maxsize, None], [(1, 0, 1), sys.maxsize, None], [(1, 0, 2), sys.maxsize, None]]
-z1 = [[(0, 1, 0), sys.maxsize, None], [(0, 1, 1), sys.maxsize, None], [(0, 1, 2), sys.maxsize, None]]
+# x1 = [[(0, 0, 0), 0, None], [(0, 0, 1), sys.maxsize, None], [(0, 0, 2), sys.maxsize, None]]
+# y1 = [[(1, 0, 0), sys.maxsize, None], [(1, 0, 1), sys.maxsize, None], [(1, 0, 2), sys.maxsize, None]]
+# z1 = [[(0, 1, 0), sys.maxsize, None], [(0, 1, 1), sys.maxsize, None], [(0, 1, 2), sys.maxsize, None]]
 
 node = [(0, 0, 0), 0, None]
 nodes = [node]
 completed = []
+completed_coord = []
 
-for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2), (0, 0, -1), (0, 0, -2):
+while True:
 	pos, s, _ = node
 	x, y, z = pos
-	x, y, z = pos = x + dx, y + dy, z + dz
-	if not check_node(x, y, z):
-		continue
-	s += 7 if dz > 0 else 1
-	new_node = [[p, s, c] for p, s, c in nodes if p == pos]
-	if not new_node:
-		nodes.append([pos, s, None])
-	else:
-		i = nodes.index(new_node[0])
-		new_node = nodes[i]
-
-	nodes.sort(key=lambda x: x[1])
-	print(nodes)
-
-completed.append(node)
-nodes.remove(node)
-
-
-
-
-
-
+	
+	for dx, dy, dz in (1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, 2), (0, 0, -1), (0, 0, -2):
+		nx, ny, nz = npos = x + dx, y + dy, z + dz
+		# print(pos, (dx, dy, dz))
+		# if npos == (0, 2, 0):
+		# 	print(check_node(nx, ny, 0), npos in completed_coord, npos)
+		if not check_node(nx, ny, nz) or npos in completed_coord:
+			continue
+		# if npos == (0, 2, 0):
+		# 	print('-->', check_node(nx, ny, nz), npos in completed_coord, npos)
+		# print(pos, (dx, dy, dz))
+		scr = s + (1 if dz == 0 else 7)
+		new_node = [[p, s, c] for p, s, c in nodes if p == npos]
+		if not new_node:
+			nodes.append([npos, scr, None])
+		else:
+			i = nodes.index(new_node[0])
+			if scr < nodes[i][1]:
+				nodes[i][1] = scr
+				
+		#print(nodes)
+		#input()
+	completed.append(node)
+	completed_coord.append(node[0])
+	# print(completed)
+	if node[0] == (eye_x, eye_y, 0):
+		print(node)
+		break
+	
+	nodes.remove(node)
+	nodes.sort(key=lambda x: x[1], reverse=False)
+	node = nodes[0]
+	# print(node, nodes)
+	
+exit()
 initialization()
 size_x, size_y = size
 global target_x, target_y
@@ -304,12 +321,14 @@ erosions = [[0 for x in range(size_x)] for y in range(size_y)]
 for x in range(size_x):
 	for y in range(size_y):
 		erosions[y][x] = erosion_level(geological_index((x, y), erosions))
-		
+		print(erosions[y][x], geo_idx(x, y))
+
 types = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
 calc = [[erosions[y][x] % 3 for x in range(target_x + 1)] for y in range(target_y + 1)]
 result_1 = sum([sum(x) for x in calc])
 print("Result part 1: ", result_1)
-exit()
+
+
 # walk = [0, tools[y][x]]
 # set1 = {0, 1}
 # set2 = {3, 2}
@@ -322,7 +341,7 @@ print_type(area)
 
 # area = [[erosions[y][x] % 3 for x in range(size_x)] for y in range(size_y)]
 # sys.maxsize
-tools = [[set(requierd_tool(area[y][x])) for y in range(size_y)] for x in range(size_x)]
+#tools = [[set(requierd_tool(area[y][x])) for y in range(size_y)] for x in range(size_x)]
 
 steps_new = [[0 for y in range(size_y)] for x in range(size_x)]
 
@@ -386,6 +405,17 @@ for y in range(size_y):
 			print('T', end=' ')
 		else:
 			print('.' if tourch[y][x] else 'x', end=' ')
+	print()
+print()
+
+
+print('\ntourch')
+for y in range(size_y):
+	for x in range(size_x):
+		if [x, y] == target:
+			print('T', end=' ')
+		else:
+			print(erosion_type(x, y), end=' ')
 	print()
 print()
 

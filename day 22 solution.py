@@ -51,7 +51,7 @@ def dijkstra(grid, corner, target):
     return nx.dijkstra_path_length(graph, (0, 0, torch), (target[0], target[1], torch))
 
 
-depth, target = 4080, (7, 60)
+depth, target = 4080, (0, 3)
 grid = generate_grid(depth, target)
 print("Answer 1:", sum([v[2] for v in grid.values()]))
 
