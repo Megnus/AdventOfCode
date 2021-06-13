@@ -186,7 +186,7 @@ def set_static(tools):
 	# print()
 
 
-def testing(scoresheet, d):
+def stesting(scoresheet, d):
 	if d > 8:
 		return
 	print('before', d)
